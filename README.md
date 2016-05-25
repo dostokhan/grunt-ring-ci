@@ -1,6 +1,6 @@
 # grunt-ring-ci
 
-> Continuous Integration for Angularjs SPA
+> Conginuous Integration for Angularjs 1 SPA
 
 ## Getting Started
 This plugin requires Grunt `~0.4.5`

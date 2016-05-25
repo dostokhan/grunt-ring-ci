@@ -13,12 +13,26 @@ module.exports = function(grunt) {
   // Please see the Grunt documentation for more information regarding task
   // creation: http://gruntjs.com/creating-tasks
 
-  grunt.registerMultiTask('ring_ci', 'Continuous Integration for Angularjs SPA', function() {
+  grunt.registerMultiTask('ring_ci', 'Conginuous Integration for Angularjs 1 SPA', function() {
     // Merge task-specific and/or target-specific options with these defaults.
     var options = this.options({
       punctuation: '.',
-      separator: ', '
+      separator: ', ',
+        target:'dev',
+        protocol:'nonssl',
+        apiversion:'141',
+        branch:'master'
     });
+
+    var Git = require('nodegit');
+
+    // #TASK pull latest branch
+    Git.Repository.open(".").then(function(repo) {
+        repo.getBranchCommit(options.branch).then(function(commit) {
+            grunt.log.wrinteln('commit author:' + commit.author());
+        });
+    });
+
 
     // Iterate over all specified file groups.
     this.files.forEach(function(f) {
