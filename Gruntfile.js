@@ -12,6 +12,23 @@ module.exports = function(grunt) {
 
     var crypto = require('crypto');
 
+    var settingsFile = ['app/config/settings.constant.js'];
+    var workerFiles = ['app/init-worker.js', 'app/chat/services/chat.connector.js'];
+    var protocolFixTemplates = ["app/config/settings.constant.js",
+        "index.html",
+        "dash.html",
+        "features.html",
+        "faq.html",
+        "faq-mobile.html",
+        "privacy.html",
+        "privacy-mobile.html",
+        "terms.html",
+        "home.html",
+        "not-found.html",
+        "player/embed.html"
+    ];
+    //var toggleProtocolFiles = settingsChangeFiles.concat()
+
     var appVersion = '0.17.1',
         minStyle = ['css/styles.min.css'],
         //vendorBuild = ['js/app-vendor.min.js'],
@@ -481,8 +498,12 @@ module.exports = function(grunt) {
             options: {
                 target: 'dev',
                 protocol: 'nonssl',
-                apiversion: '141',
-                branch: 'master'
+                apiVersion: '154',
+                branch: 'master',
+                //3rd party tasks
+                settingsFile: settingsFile,
+                protolFixTemplates: protocolFixTemplates,
+                workerFiles : workerFiles
             },
             files: {}
         },

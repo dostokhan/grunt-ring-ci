@@ -36,6 +36,7 @@
     "gruntplugin"
   ],
   "dependencies": {
+    "fs": "0.0.2",
     "nodegit": "^0.13.0"
   }
 }
