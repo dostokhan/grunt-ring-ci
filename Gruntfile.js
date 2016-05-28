@@ -12,21 +12,91 @@ module.exports = function(grunt) {
 
     var crypto = require('crypto');
 
-    var settingsFile = ['app/config/settings.constant.js'];
-    var workerFiles = ['app/init-worker.js', 'app/chat/services/chat.connector.js'];
-    var protocolFixTemplates = ["app/config/settings.constant.js",
-        "index.html",
-        "dash.html",
-        "features.html",
-        "faq.html",
-        "faq-mobile.html",
-        "privacy.html",
-        "privacy-mobile.html",
-        "terms.html",
-        "home.html",
-        "not-found.html",
-        "player/embed.html"
+    var settingsFile = ['config/settings.constant.js'];
+    var workerFiles = ['init-worker.js', 'services/chat.connector.js'];
+    var protocolFixTemplates = [
+        "webapp/index.html",
+        "webapp/dash.html",
+        "webapp/features.html",
+        "webapp/faq.html",
+        "webapp/faq-mobile.html",
+        "webapp/privacy.html",
+        "webapp/privacy-mobile.html",
+        "webapp/terms.html",
+        "webapp/home.html",
+        "webapp/not-found.html",
+        "webapp/player/embed.html",
+        "webapp/pages/index-login.html"
     ];
+
+    var vendorModules = [
+        'angular',
+        'ngRoute',
+        'ngAnimate',
+        'ui-notification',
+        'ngWebSocket',
+        'ui.bootstrap',
+        'angular-svg-round-progress',
+        'angularAudioRecorder', // THERE ARE MULTIPLE MODUELS IN THAT
+        'oc.lazyLoad'
+    ];
+
+    var appModules = [
+        //{
+            //name: 'vendor',
+            //dependencies:['config', 'connector'],
+            //files: [
+                //'js/vendor/angular/angular.min.js',
+                //'js/vendor/angular/angular-route.min.js',
+                //'js/vendor/angular/angular-animate.min.js',
+                //'js/vendor/angular/angular-loader.min.js',
+                //'js/vendor/angular/angular-ui-notification.min.js',
+                //'js/vendor/angular-websocket.min.js',
+                //'js/vendor/angular-bootstrap/ui-bootstrap-custom-0.12.1.min.js',
+                //'js/vendor/angular-bootstrap/ui-bootstrap-custom-tpls-0.12.1.min.js',
+                //'js/vendor/angular-svg-round-progressbar/build/roundProgress.js',
+                //'js/vendor/js.cookie.min.js',
+                //'js/vendor/fastdom.min.js',
+                //'js/vendor/angularAudioRecorder/angular-audio-recorder.min.js',
+                //'js/vendor/packetidgen.js',
+                //'js/vendor/oclazyload/oclazyload.min.js'
+            //]
+        //},
+        {
+            name: 'app',
+            dependencies:['config', 'connector'],
+            files: [
+                //'app.module.js',
+                'app.run.js',
+                'app.routes.js',
+                'app.controller.js',
+                'app.module.js'
+            ]
+        },
+        {
+            name: 'config',
+            dependencies: [],
+            files: [
+                //'config/config.module.js',
+                'config/settings.constant.js',
+                'config/attribute-codes.constant.js',
+                'config/app-constants.constant.js',
+                'config/actions.constant.js'
+            ]
+        },
+        {
+            name: 'connector',
+            dependencies: [],
+            files: [
+                    //'puller/puller.module.js',
+                    'puller/syncher.factory.js',
+                    'puller/parser.service.js',
+                    'puller/socket.communication.factory.js'
+                ]
+        }
+
+    ];
+
     //var toggleProtocolFiles = settingsChangeFiles.concat()
 
     var appVersion = '0.17.1',
@@ -494,16 +564,51 @@ module.exports = function(grunt) {
 
     // Configuration to be run (and then tested).
     ring_ci: {
+        local: {
+            options: {
+                target: 'local',
+                protocol: 'nonssl',
+                apiVersion: '141',
+                branch: 'develop',
+                appSrcPath: 'webapp/app/',
+                appBuildPath: 'webapp/js/build/',
+                //3rd party tasks
+                settingsFile: settingsFile,
+                protocolFixTemplates: protocolFixTemplates,
+                workerFiles : workerFiles,
+                appModules: appModules
+            },
+            files: {}
+        },
         dev: {
             options: {
                 target: 'dev',
-                protocol: 'nonssl',
-                apiVersion: '154',
-                branch: 'master',
+                protocol: 'ssl',
+                apiVersion: '141',
+                branch: 'develop',
+                appSrcPath: 'webapp/app/',
+                appBuildPath: 'webapp/js/build/',
                 //3rd party tasks
                 settingsFile: settingsFile,
-                protolFixTemplates: protocolFixTemplates,
-                workerFiles : workerFiles
+                protocolFixTemplates: protocolFixTemplates,
+                workerFiles : workerFiles,
+                appModules: appModules
+            },
+            files: {}
+        },
+        live: {
+            options: {
+                target: 'live',
+                protocol: 'ssl',
+                apiVersion: '140',
+                branch: 'master',
+                appSrcPath: 'webapp/app/',
+                appBuildPath: 'webapp/js/build/',
+                //3rd party tasks
+                settingsFile: settingsFile,
+                protocolFixTemplates: protocolFixTemplates,
+                workerFiles : workerFiles,
+                appModules: appModules
             },
             files: {}
         },
