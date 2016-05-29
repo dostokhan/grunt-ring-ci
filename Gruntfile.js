@@ -161,7 +161,7 @@ module.exports = function(grunt) {
         'styles/media.css'
     ];
 
-    var vendorScripts = [
+    var vendorFiles = [
         //'//connect.facebook.net/en_US/sdk.js',
         'js/vendor/angular/angular.js',
         'js/vendor/angular/angular-route.min.js',
@@ -176,7 +176,7 @@ module.exports = function(grunt) {
         'js/vendor/js.cookie.min.js',
         'js/vendor/fastdom.min.js',
         'js/vendor/angularAudioRecorder/angular-audio-recorder.min.js',
-        'js/vendor/packetidgen.js',
+        //'js/vendor/packetidgen.js',
         'js/vendor/oclazyload/oclazyload.min.js'
     ];
 
@@ -577,7 +577,10 @@ module.exports = function(grunt) {
                 branch: 'develop',
                 appSrcPath: 'webapp/app/',
                 appBuildPath: 'webapp/js/build/',
+                minifyStyles: false,
+                minifyScripts: false,
                 //custom tasks files
+                vendorFiles: vendorFiles,
                 linkerFiles: linkerFiles,
                 settingsFile: settingsFile,
                 protocolFixTemplates: protocolFixTemplates,
@@ -595,7 +598,10 @@ module.exports = function(grunt) {
                 branch: 'master',
                 appSrcPath: 'webapp/app/',
                 appBuildPath: 'webapp/js/build/',
+                minifyStyles: true,
+                minifyScripts: true,
                 //custom tasks files
+                vendorFiles: vendorFiles,
                 linkerFiles: linkerFiles,
                 settingsFile: settingsFile,
                 protocolFixTemplates: protocolFixTemplates,
