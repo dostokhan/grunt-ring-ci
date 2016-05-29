@@ -8,6 +8,9 @@
 
 'use strict';
 
+var Chalk = require('chalk');
+var Cssmin = require('cssmin');
+
 module.exports = function(grunt) {
 
   // Please see the Grunt documentation for more information regarding task
@@ -15,9 +18,9 @@ module.exports = function(grunt) {
 
   grunt.registerMultiTask('ring_ci', 'Conginuous Integration for Angularjs 1 SPA', function() {
     var self = this,
-        srcFiles = [],
-        isWindows = process.platform === 'win32',
-        Chalk = require('chalk');
+        SCRIPT_FILES = [],
+        STYLE_SHEETS = [],
+        srcFiles = [];
     // Merge task-specific and/or target-specific options with these defaults.
     var options = this.options({
       punctuation: '.',
@@ -30,66 +33,15 @@ module.exports = function(grunt) {
 
 
     // HELPER METHODS
-    function unixifyPath (filePath) {
-        return isWindows ?  filePath.replace(/\\/g, '/') : filePath;
-    }
-    function replace(files, search, replace, doNotPrependPath) {
-        grunt.log.writeln(Chalk.bold.green('$$$$ REPLACE FILE CONTENT. $$$$'));
-        // fix file paths with buildpath
-
-        for(var i = 0; i < files.length; i++) {
-            files[i] = unixifyPath(
-                !!doNotPrependPath ?  files[i] :  options.appBuildPath + files[i]
-            );
-        }
-
-        var filePaths = grunt.file.expand(files),
-            fileContent,
-            updatedContent;
-
-        if (!(search instanceof Array)) {
-            grunt.log.writeln('# Replace:' + Chalk.cyan(search) + ' With:' + Chalk.red(replace));
-        }
-        filePaths.forEach(function(filepath) {
-            //grunt.log.writeln(filepath);
-
-            if (!grunt.file.exists(filepath)) {
-                grunt.fail.warn(Chalk.red('Source file "' + filepath + '" not found.'));
-            } else {
-                grunt.log.writeln('File:' + Chalk.yellow(filepath));
-                fileContent = grunt.file.read(filepath, {encoding:'utf8'});
-                if (search instanceof Array) {
-                    updatedContent = fileContent;
-                    for(var i = 0; i < search.length; i++) {
-                        grunt.log.writeln(i + '# Replace:' + Chalk.cyan(search[i]) + ' With:' + Chalk.red(replace[i]));
-                        if (search[i].test(String(updatedContent))) {
-                            updatedContent = String(updatedContent).replace(search[i], replace[i]);
-                        } else {
-                            grunt.fail.warn('No Match Found');
-                        }
-                    }
-                } else {
-                    updatedContent = fileContent;
-                    if (search.test(String(updatedContent))) {
-                        updatedContent = String(updatedContent).replace(search, replace);
-                    } else {
-                        grunt.fail.warn('No Match Found');
-                    }
-                }
-                grunt.file.write(filepath, updatedContent);
-            }
-        });
-        grunt.log.writeln(Chalk.bold.green('^^^^ END REPLACE FILE CONTENT. ^^^^ '));
-    }
-
+    var ringHelper = require('./lib/helpers').init(grunt, options);
     // END HELPER METHODS
 
 
     // #COPY all app source files except 'bower_modules' to build path
     function copySrcToBuild() {
         grunt.log.writeln(Chalk.bold.green('$$$$ COPY SOURCE FILES from: ' + options.appSrcPath + ' TO :'+ options.appBuildPath + '. $$$$'));
-        var srcPath = unixifyPath(options.appSrcPath),
-            buildPath = unixifyPath(options.appBuildPath);
+        var srcPath = ringHelper.unixifyPath(options.appSrcPath),
+            buildPath = ringHelper.unixifyPath(options.appBuildPath);
         // destinations exists? delete and recreate
         if (grunt.file.exists(buildPath)) {
             grunt.log.write(Chalk.black('BuildPath:' + buildPath + ' exists. Recreating'));
@@ -100,15 +52,15 @@ module.exports = function(grunt) {
         var i,k;
         for(k = 0; k < options.appModules.length; k++) {
             for(i = 0; i < options.appModules[k].files.length; i++) {
-                srcPath = unixifyPath(options.appSrcPath + options.appModules[k].files[i]);
-                buildPath = unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
+                srcPath = ringHelper.unixifyPath(options.appSrcPath + options.appModules[k].files[i]);
+                buildPath = ringHelper.unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
                 //grunt.log.writeln('src:' + srcPath + ' dest:' + buildPath);
                 if (grunt.file.exists(srcPath)) {
                     grunt.file.copy(srcPath, buildPath);
                     srcFiles.push(buildPath);
                     grunt.log.writeln(Chalk.cyan(srcPath) + ' > ' + Chalk.red(buildPath)) ;
                 } else {
-                    grunt.fail.warn('File: ' + Chalk.red(srcPath) + ' does not exist');
+                    grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));
                 }
             }
 
@@ -120,7 +72,7 @@ module.exports = function(grunt) {
 
     // #TASK update apiversion, protocol, settings(analytics,debugEnabled,secure) etc using regex
     function updateSettings() {
-
+        grunt.log.writeln(Chalk.bold.green('$$$$ UPDATE APIVERSION, PROTOCOL, SETTINGS(ANALYTICS,DEBUGENABLED,SECURE) ETC $$$$'));
         var searches =  [/(['|"]apiVersion['|"]\s*:\s*[0-9]+)/g],
             replaces = ['"apiVersion":' + options.apiVersion],
             protocolSearches,
@@ -141,12 +93,13 @@ module.exports = function(grunt) {
         //grunt.log.writeflags(searches);
         //grunt.log.writeflags(replaces);
         // Modify settingsFile
-        replace(options.settingsFile, searches, replaces);
+        ringHelper.replace(options.settingsFile, searches, replaces);
         // Modify Template files
-        replace(options.protocolFixTemplates, protocolSearches[0], protocolReplaces[0], true);
+        ringHelper.replace(options.protocolFixTemplates, protocolSearches[0], protocolReplaces[0], true);
         // MOdify Worker Files
-        replace(options.workerFiles, protocolSearches[1], protocolReplaces[1]);
+        ringHelper.replace(options.workerFiles, protocolSearches[1], protocolReplaces[1]);
 
+        grunt.log.writeln(Chalk.bold.green('^^^^ END UPDATE APIVERSION, PROTOCOL, SETTINGS(ANALYTICS,DEBUGENABLED,SECURE) ETC ^^^^ '));
     }
 
     function buildModules() {
@@ -163,15 +116,15 @@ module.exports = function(grunt) {
             moduleContentEnd = "})();";
 
             grunt.log.writeln('Module ' + Chalk.red(options.appModules[k].name) );
-            moduleFile = unixifyPath(options.appBuildPath + 'modules/' + options.appModules[k].name + '.module.js');
+            moduleFile = ringHelper.unixifyPath(options.appBuildPath + 'modules/' + options.appModules[k].name + '.module.js');
             for(i = 0; i < options.appModules[k].files.length; i++) {
-                srcPath = unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
+                srcPath = ringHelper.unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
                 if (grunt.file.exists(srcPath)) {
                     // concat contents
                     moduleContent += String(grunt.file.read(srcPath, {encoding:'utf8'}));
                     grunt.log.writeln(Chalk.cyan(srcPath));
                 } else {
-                    grunt.fail.warn('File: ' + Chalk.red(srcPath) + ' does not exist');
+                    grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));
                 }
             }
 
@@ -189,6 +142,8 @@ module.exports = function(grunt) {
 
             moduleContent = moduleContentStart + moduleContent + moduleContentEnd;
             grunt.file.write(moduleFile, moduleContent);
+
+            SCRIPT_FILES.push(moduleFile);
             grunt.log.writeln('BUILD MODULE: ' + Chalk.red(moduleFile));
         }
         grunt.log.writeln(Chalk.bold.green('^^^^ END APP MODULES BUILD. ^^^^ '));
@@ -202,10 +157,81 @@ module.exports = function(grunt) {
             ringloggerRegex = /RingLogger([\s\S]*?;)/g;
 
         for(i = 0; i < options.appModules.length; i++) {
-            moduleFile = unixifyPath(options.appBuildPath + 'modules/' +  options.appModules[i].name + '.module.js');
-            replace(moduleFile, [debugRegex, ringloggerRegex], ['',''], true);
+            moduleFile = ringHelper.unixifyPath(options.appBuildPath + 'modules/' +  options.appModules[i].name + '.module.js');
+            ringHelper.replace(moduleFile, [debugRegex, ringloggerRegex], ['',''], true);
         }
         grunt.log.writeln(Chalk.bold.green('^^^^ END REMOVE DEBUG CODE from APP MODULES  ^^^^ '));
+    }
+
+
+    function uglifyModules() {
+        SCRIPT_FILES = [];
+        grunt.log.writeln(Chalk.bold.green('$$$$ UGLIFY SOURCE MODULES $$$$'));
+        var uglifyOptions = {
+                    banner: '',
+                    footer: '',
+                    compress: {
+                        warnings: false
+                    },
+                    mangle: {},
+                    beautify: false,
+                    report: 'min',
+                    expression: false,
+                    maxLineLen: 32000,
+                    ASCIIOnly: false,
+                    screwIE8: false,
+                    quoteStyle: 0
+            },
+            src,
+            fileName,
+            lastDotIndex,
+            dest = 'js/dist/';
+
+        for(var i = 0; i < options.appModules.length; i++) {
+            dest = 'js/dist/';
+            src = ringHelper.unixifyPath(options.appBuildPath + 'modules/' +  options.appModules[i].name + '.module.js');
+            fileName = src.substr(src.lastIndexOf('/') + 1);
+            dest += fileName.substr(0, fileName.lastIndexOf('.')) + '.min' + fileName.substr(fileName.lastIndexOf('.'));
+            ringHelper.uglify(src, dest, uglifyOptions);
+            SCRIPT_FILES.push(dest);
+        }
+
+        grunt.log.writeln(Chalk.bold.green('^^^^ END UGLIFY SOURCE MODULES   ^^^^ '));
+    }
+
+
+    function minifyStyles() {
+        grunt.log.writeln(Chalk.bold.green('$$$$ MINIFY STYLESHEETS USING CSSMIN $$$$'));
+        var cssfile, minifiedStyle = '';
+        for(var i = 0; i < options.appStyles.length; i++) {
+            cssfile = ringHelper.unixifyPath(options.appStyles[i]);
+            if (!grunt.file.exists(cssfile)) {
+                grunt.fail.warn(Chalk.bold.red('File: ' + cssfile+ ' does not exist'));
+            } else {
+                minifiedStyle += String(grunt.file.read(cssfile, {encoding:'utf8'}));
+            }
+        }
+
+        grunt.file.write('css/styles.min.css', Cssmin(minifiedStyle));
+        STYLE_SHEETS = ['css/styles.min.css'];
+        grunt.log.writeln(Chalk.bold.green('^^^^ END MINIFY STYLESHEETS USING CSSMIN   ^^^^ '));
+    }
+
+
+    function linkScriptsStyles() {
+        grunt.log.writeln(Chalk.bold.green('$$$$ LINK SOURCE SCRIPTS AND STYLESHEETS $$$$'));
+
+        var styleStartTag = '<!--STYLES-->',
+            styleEndTag = '<!--STYLES END-->',
+            styleFileTmpl = "<link rel='stylesheet' type='text/css' href='%s' />",
+            scriptStartTag = '<!--SCRIPTS-->',
+            scriptEndTag = '<!--SCRIPTS END-->',
+            scriptFileTmpl = '<script src="%s"></script>';
+
+        ringHelper.linkFiles(SCRIPT_FILES, scriptFileTmpl, scriptStartTag, scriptEndTag,  options.linkerFiles);
+        ringHelper.linkFiles(STYLE_SHEETS, styleFileTmpl, styleStartTag, styleEndTag,  options.linkerFiles);
+
+        grunt.log.writeln(Chalk.bold.green('^^^^ END LINK SOURCE SCRIPTS AND STYLESHEETS  ^^^^ '));
     }
 
 
@@ -225,51 +251,22 @@ module.exports = function(grunt) {
          removeDebugCode();
     }
     // 5. uglify modules if necessary
-    // 6. link javascript files
-
-
-
-
-    // #TASK pull latest branch
-    function updateBranch() {
-        var Git = require('nodegit');
-        var asyncDone = self.async();
-        Git.Repository.open(".").then(function(repo) {
-            grunt.log.writeln('');
-            grunt.log.writeln('OPENED REPO. now opening branch:' + options.branch);
-            repo.getBranchCommit(options.branch).then(function(commit) {
-                grunt.log.writeln('got branch commit');
-                grunt.log.writeln(commit.date());
-                asyncDone();
-            });
-        });
+    grunt.log.writeln();
+    if (options.target === 'live') {
+        uglifyModules();
     }
+    // 6. minify css if necessary
+    grunt.log.writeln();
+    if (options.target === 'live') {
+        minifyStyles();
+    } else {
+        STYLE_SHEETS = options.appStyles;
+    }
+    // 7. link javascript files
+    grunt.log.writeln();
+    linkScriptsStyles();
 
-    // Iterate over all specified file groups.
-    this.files.forEach(function(f) {
-      // Concat specified files.
-      var src = f.src.filter(function(filepath) {
-        // Warn on and remove invalid source files (if nonull was set).
-        if (!grunt.file.exists(filepath)) {
-          grunt.log.warn('Source file "' + filepath + '" not found.');
-          return false;
-        } else {
-          return true;
-        }
-      }).map(function(filepath) {
-        // Read file source.
-        return grunt.file.read(filepath);
-      }).join(grunt.util.normalizelf(options.separator));
 
-      // Handle options.
-      src += options.punctuation;
-
-      // Write the destination file.
-      grunt.file.write(f.dest, src);
-
-      // Print a success message.
-      grunt.log.writeln('File "' + f.dest + '" created.');
-    });
   });
 
 };

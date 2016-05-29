@@ -12,6 +12,11 @@ module.exports = function(grunt) {
 
     var crypto = require('crypto');
 
+    var linkerFiles = [
+        'index.html',
+        'dash.html'
+    ];
+
     var settingsFile = ['config/settings.constant.js'];
     var workerFiles = ['init-worker.js', 'services/chat.connector.js'];
     var protocolFixTemplates = [
@@ -63,7 +68,7 @@ module.exports = function(grunt) {
             //]
         //},
         {
-            name: 'app',
+            name: 'ringid',
             dependencies:['config', 'connector'],
             files: [
                 //'app.module.js',
@@ -572,11 +577,28 @@ module.exports = function(grunt) {
                 branch: 'develop',
                 appSrcPath: 'webapp/app/',
                 appBuildPath: 'webapp/js/build/',
-                //3rd party tasks
+                linkerFiles: linkerFiles,
+                uglify: {
+                    banner: "/*! <%= pkg.name %> <%= grunt.template.today('yyyy-mm-dd') %> */\n",
+                    footer: '',
+                    compress: {
+                        warnings: false
+                    },
+                    mangle: {},
+                    beautify: false,
+                    report: 'min',
+                    expression: false,
+                    maxLineLen: 32000,
+                    ASCIIOnly: false,
+                    screwIE8: false,
+                    quoteStyle: 0
+                },
+                //custom tasks files
                 settingsFile: settingsFile,
                 protocolFixTemplates: protocolFixTemplates,
                 workerFiles : workerFiles,
-                appModules: appModules
+                appModules: appModules,
+                appStyles: appStyles
             },
             files: {}
         },
@@ -588,11 +610,12 @@ module.exports = function(grunt) {
                 branch: 'develop',
                 appSrcPath: 'webapp/app/',
                 appBuildPath: 'webapp/js/build/',
-                //3rd party tasks
+                //custom tasks files
                 settingsFile: settingsFile,
                 protocolFixTemplates: protocolFixTemplates,
                 workerFiles : workerFiles,
-                appModules: appModules
+                appModules: appModules,
+                appStyles: appStyles
             },
             files: {}
         },
@@ -604,11 +627,28 @@ module.exports = function(grunt) {
                 branch: 'master',
                 appSrcPath: 'webapp/app/',
                 appBuildPath: 'webapp/js/build/',
-                //3rd party tasks
+                linkerFiles: linkerFiles,
+                uglify: {
+                    banner: '',
+                    footer: '',
+                    compress: {
+                        warnings: false
+                    },
+                    mangle: {},
+                    beautify: false,
+                    report: 'min',
+                    expression: false,
+                    maxLineLen: 32000,
+                    ASCIIOnly: false,
+                    screwIE8: false,
+                    quoteStyle: 0
+                },
+                //custom tasks files
                 settingsFile: settingsFile,
                 protocolFixTemplates: protocolFixTemplates,
                 workerFiles : workerFiles,
-                appModules: appModules
+                appModules: appModules,
+                appStyles: appStyles
             },
             files: {}
         },
