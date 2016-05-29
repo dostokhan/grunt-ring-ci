@@ -144,19 +144,21 @@ module.exports = function(grunt) {
                 }
             }
 
-            // insert dependency modules
-            if (options.appModules[k].dependencies.length > 0) {
-                moduleContentStart += " angular.module('" + options.appModules[k].name + "', [ ";
-                for(d = 0; d < options.appModules[k].dependencies.length; d++) {
-                    moduleContentStart += "'" + options.appModules[k].dependencies[d] + "', ";
+            if (options.appModules[k].name !== 'globals') {
+                // insert dependency modules
+                if (options.appModules[k].dependencies.length > 0) {
+                    moduleContentStart += " angular.module('" + options.appModules[k].name + "', [ ";
+                    for(d = 0; d < options.appModules[k].dependencies.length; d++) {
+                        moduleContentStart += "'" + options.appModules[k].dependencies[d] + "', ";
+                    }
+                    moduleContentStart = moduleContentStart.substr(0, moduleContentStart.length -2);
+                    moduleContentStart += " ]); ";
+                } else {
+                    moduleContentStart += " angular.module('" + options.appModules[k].name + "', []); ";
                 }
-                moduleContentStart = moduleContentStart.substr(0, moduleContentStart.length -2);
-                moduleContentStart += " ]); ";
-            } else {
-                moduleContentStart += " angular.module('" + options.appModules[k].name + "', []); ";
+                moduleContent = moduleContentStart + moduleContent + moduleContentEnd;
             }
 
-            moduleContent = moduleContentStart + moduleContent + moduleContentEnd;
             grunt.file.write(moduleFile, moduleContent);
 
             SCRIPT_FILES.push(moduleFile);
