@@ -1,4 +1,5 @@
 # grunt-ring-ci
+## Tailor made build script for a project. Non Generic Plugin
 
 > Conginuous Integration for Angularjs 1 SPA
 
