@@ -577,40 +577,8 @@ module.exports = function(grunt) {
                 branch: 'develop',
                 appSrcPath: 'webapp/app/',
                 appBuildPath: 'webapp/js/build/',
+                //custom tasks files
                 linkerFiles: linkerFiles,
-                uglify: {
-                    banner: "/*! <%= pkg.name %> <%= grunt.template.today('yyyy-mm-dd') %> */\n",
-                    footer: '',
-                    compress: {
-                        warnings: false
-                    },
-                    mangle: {},
-                    beautify: false,
-                    report: 'min',
-                    expression: false,
-                    maxLineLen: 32000,
-                    ASCIIOnly: false,
-                    screwIE8: false,
-                    quoteStyle: 0
-                },
-                //custom tasks files
-                settingsFile: settingsFile,
-                protocolFixTemplates: protocolFixTemplates,
-                workerFiles : workerFiles,
-                appModules: appModules,
-                appStyles: appStyles
-            },
-            files: {}
-        },
-        dev: {
-            options: {
-                target: 'dev',
-                protocol: 'ssl',
-                apiVersion: '141',
-                branch: 'develop',
-                appSrcPath: 'webapp/app/',
-                appBuildPath: 'webapp/js/build/',
-                //custom tasks files
                 settingsFile: settingsFile,
                 protocolFixTemplates: protocolFixTemplates,
                 workerFiles : workerFiles,
@@ -627,23 +595,8 @@ module.exports = function(grunt) {
                 branch: 'master',
                 appSrcPath: 'webapp/app/',
                 appBuildPath: 'webapp/js/build/',
-                linkerFiles: linkerFiles,
-                uglify: {
-                    banner: '',
-                    footer: '',
-                    compress: {
-                        warnings: false
-                    },
-                    mangle: {},
-                    beautify: false,
-                    report: 'min',
-                    expression: false,
-                    maxLineLen: 32000,
-                    ASCIIOnly: false,
-                    screwIE8: false,
-                    quoteStyle: 0
-                },
                 //custom tasks files
+                linkerFiles: linkerFiles,
                 settingsFile: settingsFile,
                 protocolFixTemplates: protocolFixTemplates,
                 workerFiles : workerFiles,

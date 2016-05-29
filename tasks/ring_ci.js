@@ -90,8 +90,6 @@ module.exports = function(grunt) {
         searches = searches.concat([/analytics\s*:\s*\w+,/, /debugEnabled\s*:\s*\w+,/]);
         replaces = replaces.concat( options.target === 'live' ?  ['analytics:true,', 'debugEnabled:false,'] : ['analytics:false,', 'debugEnabled:true,'] );
 
-        //grunt.log.writeflags(searches);
-        //grunt.log.writeflags(replaces);
         // Modify settingsFile
         ringHelper.replace(options.settingsFile, searches, replaces);
         // Modify Template files
@@ -168,7 +166,7 @@ module.exports = function(grunt) {
         SCRIPT_FILES = [];
         grunt.log.writeln(Chalk.bold.green('$$$$ UGLIFY SOURCE MODULES $$$$'));
         var uglifyOptions = {
-                    banner: '',
+                    banner: "/*! copywrite @ Ringid.com  %s */\n",
                     footer: '',
                     compress: {
                         warnings: false

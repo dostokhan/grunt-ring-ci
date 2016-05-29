@@ -45,7 +45,11 @@ exports.init = function(grunt, options) {
                         if (search[i].test(String(updatedContent))) {
                             updatedContent = String(updatedContent).replace(search[i], replace[i]);
                         } else {
-                            grunt.fail.warn(Chalk.bold.red('No Match Found'));
+                            if (doNotPrependPath) { // ONLY TEMPLATES MATCH NOT FOUND IS SUPRESSED OTHERWISE WARNING
+                                grunt.log.warn(Chalk.bold.red('No Match Found'));
+                            } else {
+                                grunt.fail.warn(Chalk.bold.red('No Match Found'));
+                            }
                         }
                     }
                 } else {
@@ -53,7 +57,11 @@ exports.init = function(grunt, options) {
                     if (search.test(String(updatedContent))) {
                         updatedContent = String(updatedContent).replace(search, replace);
                     } else {
-                        grunt.fail.warn(Chalk.bold.red('No Match Found'));
+                        if (doNotPrependPath) { // ONLY TEMPLATES MATCH NOT FOUND IS SUPRESSED OTHERWISE WARNING
+                            grunt.log.warn(Chalk.bold.red('No Match Found'));
+                        } else {
+                            grunt.fail.warn(Chalk.bold.red('No Match Found'));
+                        }
                     }
                 }
                 grunt.file.write(filepath, updatedContent);
@@ -65,7 +73,6 @@ exports.init = function(grunt, options) {
         var result, err ;
         src = exports.unixifyPath(src);
         dest = exports.unixifyPath(dest);
-        //grunt.log.writeflags(options.uglify);
         try {
             result = Uglifyjs.minify(src, uglifyOptions);
         } catch(e) {
@@ -82,7 +89,7 @@ exports.init = function(grunt, options) {
             grunt.fail.error(err);
         }
 
-        var output = options.uglify.banner + result.code;
+        var output = Util.format(uglifyOptions.banner, grunt.template.today('yyyy-mm-dd')) + result.code;
 
         grunt.file.write(dest, output);
         grunt.log.writeln( src + ' > ' + dest);
@@ -137,7 +144,7 @@ exports.init = function(grunt, options) {
 				grunt.log.writeln(Chalk.cyan('File "' + dest + '" updated.'));
             }
         });
-    }
+    };
 
 
     return exports;
