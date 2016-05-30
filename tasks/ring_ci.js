@@ -138,7 +138,7 @@ module.exports = function(grunt) {
                 if (grunt.file.exists(srcPath)) {
                     // concat contents
                     moduleContent += String(grunt.file.read(srcPath, {encoding:'utf8'}));
-                    grunt.log.writeln(Chalk.cyan(srcPath));
+                    //grunt.log.writeln(Chalk.cyan(srcPath));
                 } else {
                     grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));
                 }
