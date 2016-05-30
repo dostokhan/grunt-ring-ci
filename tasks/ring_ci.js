@@ -144,7 +144,7 @@ module.exports = function(grunt) {
                 }
             }
 
-            if (options.appModules[k].name !== 'globals') {
+            if (options.appModules[k].name !== 'globals' ) {
                 // insert dependency modules
                 if (options.appModules[k].dependencies.length > 0) {
                     moduleContentStart += " angular.module('" + options.appModules[k].name + "', [ ";
@@ -276,7 +276,11 @@ module.exports = function(grunt) {
             scriptEndTag = '<!--SCRIPTS END-->',
             scriptFileTmpl = '<script src="%s"></script>';
 
-        ringHelper.linkFiles(VENDOR_SCRIPTS.concat(SCRIPT_FILES), scriptFileTmpl, scriptStartTag, scriptEndTag,  options.linkerFiles);
+        if (options.target === 'live') {
+            ringHelper.linkFiles(VENDOR_SCRIPTS.concat(SCRIPT_FILES), scriptFileTmpl, scriptStartTag, scriptEndTag,  options.linkerFiles);
+        } else {
+            ringHelper.linkFiles(VENDOR_SCRIPTS.concat(options.debugFiles.concat(SCRIPT_FILES)), scriptFileTmpl, scriptStartTag, scriptEndTag,  options.linkerFiles);
+        }
         ringHelper.linkFiles(STYLE_SHEETS, styleFileTmpl, styleStartTag, styleEndTag,  options.linkerFiles);
 
         grunt.log.writeln(Chalk.bold.green('^^^^ END LINK SOURCE SCRIPTS AND STYLESHEETS  ^^^^ '));
