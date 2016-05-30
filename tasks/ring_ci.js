@@ -75,7 +75,7 @@ module.exports = function(grunt) {
                 if (grunt.file.exists(srcPath)) {
                     grunt.file.copy(srcPath, buildPath);
                     srcFiles.push(buildPath);
-                    grunt.log.writeln(Chalk.cyan(srcPath) + ' > ' + Chalk.red(buildPath)) ;
+                    //grunt.log.writeln(Chalk.cyan(srcPath) + ' > ' + Chalk.red(buildPath)) ;
                 } else {
                     grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));
                 }
