@@ -45,11 +45,7 @@ exports.init = function(grunt, options) {
                         if (search[i].test(String(updatedContent))) {
                             updatedContent = String(updatedContent).replace(search[i], replace[i]);
                         } else {
-                            if (doNotPrependPath) { // ONLY TEMPLATES MATCH NOT FOUND IS SUPRESSED OTHERWISE WARNING
-                                grunt.log.warn(Chalk.bold.red('No Match Found'));
-                            } else {
-                                grunt.fail.warn(Chalk.bold.red('No Match Found'));
-                            }
+                            grunt.log.warn(Chalk.bold.red('No Match Found'));
                         }
                     }
                 } else {
@@ -57,11 +53,7 @@ exports.init = function(grunt, options) {
                     if (search.test(String(updatedContent))) {
                         updatedContent = String(updatedContent).replace(search, replace);
                     } else {
-                        if (doNotPrependPath) { // ONLY TEMPLATES MATCH NOT FOUND IS SUPRESSED OTHERWISE WARNING
-                            grunt.log.warn(Chalk.bold.red('No Match Found'));
-                        } else {
-                            grunt.fail.warn(Chalk.bold.red('No Match Found'));
-                        }
+                        grunt.log.warn(Chalk.bold.red('No Match Found'));
                     }
                 }
                 grunt.file.write(filepath, updatedContent);
