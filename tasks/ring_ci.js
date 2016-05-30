@@ -56,7 +56,7 @@ module.exports = function(grunt) {
 
     // #COPY all app source files except 'bower_modules' to build path
     function copySrcToBuild() {
-        grunt.log.writeln(Chalk.bold.green('$$$$$$$$$$$$$$$$$$$$ COPY SOURCE FILES from: ' + options.appSrcPath + ' TO :'+ options.appBuildPath + '. $$$$$$$$$$$$$$$$$$$$'));
+        grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ COPY SOURCE FILES from: ' + options.appSrcPath + ' TO :'+ options.appBuildPath + '. $$$$$$$$$$$$$$$$$$$$'));
         var srcPath = ringHelper.unixifyPath(options.appSrcPath),
             buildPath = ringHelper.unixifyPath(options.appBuildPath);
         // destinations exists? delete and recreate
@@ -89,7 +89,7 @@ module.exports = function(grunt) {
 
     // #TASK update apiversion, protocol, settings(analytics,debugEnabled,secure) etc using regex
     function updateSettings() {
-        grunt.log.writeln(Chalk.bold.green('$$$$$$$$$$$$$$$$$$$$ UPDATE APIVERSION, PROTOCOL, SETTINGS(ANALYTICS,DEBUGENABLED,SECURE) ETC $$$$$$$$$$$$$$$$$$$$'));
+        grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ UPDATE APIVERSION, PROTOCOL, SETTINGS(ANALYTICS,DEBUGENABLED,SECURE) ETC $$$$$$$$$$$$$$$$$$$$'));
         var searches =  [/(['|"]apiVersion['|"]\s*:\s*[0-9]+)/g],
             replaces = ['"apiVersion":' + options.apiVersion],
             protocolSearches,
@@ -118,7 +118,7 @@ module.exports = function(grunt) {
     }
 
     function buildModules() {
-        grunt.log.writeln(Chalk.bold.green('$$$$$$$$$$$$$$$$$$$$ BUILD APP MODULES in: ' + options.appBuildPath + 'modules/. $$$$$$$$$$$$$$$$$$$$'));
+        grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ BUILD APP MODULES in: ' + options.appBuildPath + 'modules/. $$$$$$$$$$$$$$$$$$$$'));
         var i,k,d, srcPath, moduleFile,
             moduleContent = '',
             moduleContentStart = '',
@@ -131,7 +131,7 @@ module.exports = function(grunt) {
             moduleContentStart = "(function() { 'use strict'; ";
             moduleContentEnd = "})();";
 
-            grunt.log.writeln('Module ' + Chalk.red(options.appModules[k].name) );
+            grunt.log.writeln( );
             moduleFile = ringHelper.unixifyPath(options.appBuildPath + 'modules/' + options.appModules[k].name + '.module.js');
             for(i = 0; i < options.appModules[k].files.length; i++) {
                 srcPath = ringHelper.unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
@@ -162,7 +162,7 @@ module.exports = function(grunt) {
             grunt.file.write(moduleFile, moduleContent);
 
             SCRIPT_FILES.push(moduleFile);
-            grunt.log.writeln('BUILD MODULE: ' + Chalk.red(moduleFile));
+            grunt.log.writeln('Module:' + Chalk.red(options.appModules[k].name) + ' > ' + Chalk.red(moduleFile));
         }
 
 
@@ -171,7 +171,7 @@ module.exports = function(grunt) {
 
 
     function removeDebugCode() {
-        grunt.log.writeln(Chalk.bold.green('$$$$$$$$$$$$$$$$$$$$ REMOVE DEBUG CODE from APP MODULES  $$$$$$$$$$$$$$$$$$$$'));
+        grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ REMOVE DEBUG CODE from APP MODULES  $$$$$$$$$$$$$$$$$$$$'));
         var moduleFile, i, moduleContent,
             debugRegex = /DIGEST_DEBUG_START([\s\S]*?)(DIGEST_DEBUG_END)/gm,
             ringloggerRegex = /RingLogger([\s\S]*?;)/g;
@@ -185,7 +185,7 @@ module.exports = function(grunt) {
 
 
     function prepareVendorScripts() {
-        grunt.log.writeln(Chalk.bold.green('$$$$$$$$$$$$$$$$$$$$ BUILDING app.vendor.min $$$$$$$$$$$$$$$$$$$$'));
+        grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ BUILDING app.vendor.min $$$$$$$$$$$$$$$$$$$$'));
         var srcPath, scriptContent = '', minifiedScript = '', err;
         for(var i = 0; i < options.vendorFiles.length; i++) {
             srcPath = ringHelper.unixifyPath(options.vendorFiles[i]);
@@ -229,7 +229,7 @@ module.exports = function(grunt) {
 
     function uglifyModules() {
         SCRIPT_FILES = [];
-        grunt.log.writeln(Chalk.bold.green('$$$$$$$$$$$$$$$$$$$$ UGLIFY SOURCE MODULES $$$$$$$$$$$$$$$$$$$$'));
+        grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ UGLIFY SOURCE MODULES $$$$$$$$$$$$$$$$$$$$'));
         var src,
             fileName,
             lastDotIndex,
@@ -249,7 +249,7 @@ module.exports = function(grunt) {
 
 
     function minifyStyles() {
-        grunt.log.writeln(Chalk.bold.green('$$$$$$$$$$$$$$$$$$$$ MINIFY STYLESHEETS USING CSSMIN $$$$$$$$$$$$$$$$$$$$'));
+        grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ MINIFY STYLESHEETS USING CSSMIN $$$$$$$$$$$$$$$$$$$$'));
         var cssfile, minifiedStyle = '';
         for(var i = 0; i < options.appStyles.length; i++) {
             cssfile = ringHelper.unixifyPath(options.appStyles[i]);
@@ -267,7 +267,7 @@ module.exports = function(grunt) {
 
 
     function linkScriptsStyles() {
-        grunt.log.writeln(Chalk.bold.green('$$$$$$$$$$$$$$$$$$$$ LINK SOURCE SCRIPTS AND STYLESHEETS $$$$$$$$$$$$$$$$$$$$'));
+        grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ LINK SOURCE SCRIPTS AND STYLESHEETS $$$$$$$$$$$$$$$$$$$$'));
 
         var styleStartTag = '<!--STYLES-->',
             styleEndTag = '<!--STYLES END-->',
