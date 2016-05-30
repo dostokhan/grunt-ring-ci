@@ -162,7 +162,7 @@ module.exports = function(grunt) {
             grunt.file.write(moduleFile, moduleContent);
 
             SCRIPT_FILES.push(moduleFile);
-            grunt.log.writeln('Module:' + Chalk.red(options.appModules[k].name) + ' > ' + Chalk.red(moduleFile));
+            grunt.log.writeln('Module:' + Chalk.blue(options.appModules[k].name) + ' > ' + Chalk.green(moduleFile));
         }
 
 
