@@ -133,13 +133,19 @@ module.exports = function(grunt) {
 
             grunt.log.writeln( );
             moduleFile = ringHelper.unixifyPath(options.appBuildPath + 'modules/' + options.appModules[k].name + '.module.js');
+            if (!options.buildModules) {
+                SCRIPT_FILES.push(moduleFile); // debug enabled.  including all scripts as it is
+            }
             for(i = 0; i < options.appModules[k].files.length; i++) {
                 srcPath = ringHelper.unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
                 fileName = srcPath.substr(srcPath.lastIndexOf('/') + 1);
                 if (grunt.file.exists(srcPath)) {
-                    // concat contents
-                    moduleContent += '\n// File: ' + fileName + "\n" + String(grunt.file.read(srcPath, {encoding:'utf8'}));
-                    //grunt.log.writeln(Chalk.cyan(srcPath));
+                    if (options.buildModules) {
+                        // concat contents
+                        moduleContent += '\n// File: ' + fileName + "\n" + String(grunt.file.read(srcPath, {encoding:'utf8'}));
+                    } else {
+                        SCRIPT_FILES.push(srcPath); // debug enabled including all scripts as it is
+                    }
                 } else {
                     grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));
                 }
@@ -162,7 +168,9 @@ module.exports = function(grunt) {
 
             grunt.file.write(moduleFile, moduleContent);
 
-            SCRIPT_FILES.push(moduleFile);
+            if (options.buildModules) {
+                SCRIPT_FILES.push(moduleFile);
+            }
             grunt.log.writeln('Module:' + Chalk.blue(options.appModules[k].name) + ' > ' + Chalk.green(moduleFile));
         }
 
@@ -171,13 +179,13 @@ module.exports = function(grunt) {
     }
 
 
-    function removeDebugCode() {
+    function removeDebugCode(files) {
         grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ REMOVE DEBUG CODE from APP MODULES  $$$$$$$$$$$$$$$$$$$$'));
         var moduleFile, i, moduleContent,
             debugRegex = /DIGEST_DEBUG_START([\s\S]*?)(DIGEST_DEBUG_END)/gm,
             ringloggerRegex = /RingLogger([\s\S]*?;)/g;
 
-        for(i = 0; i < options.appModules.length; i++) {
+        for(i = 0; i < files.length; i++) {
             moduleFile = ringHelper.unixifyPath(options.appBuildPath + 'modules/' +  options.appModules[i].name + '.module.js');
             ringHelper.replace(moduleFile, [debugRegex, ringloggerRegex], ['',''], true);
         }
@@ -304,17 +312,17 @@ module.exports = function(grunt) {
     // 4. remove debug codes if necessary
     grunt.log.writeln();
     if (options.target === 'live') {
-         removeDebugCode();
+         removeDebugCode(SCRIPT_FILES);
     }
     // 5. uglify modules if necessary
     grunt.log.writeln();
-    if (options.minifyScripts) {
+    if (options.minifyScripts || options.target === 'live') {
         prepareVendorScripts();
         uglifyModules();
     }
     // 6. minify css if necessary
     grunt.log.writeln();
-    if (options.minifyStyles) {
+    if (options.minifyStyles || options.target === 'live') {
         minifyStyles();
     } else {
         STYLE_SHEETS = options.appStyles;
