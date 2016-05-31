@@ -112,7 +112,7 @@ module.exports = function(grunt) {
         // Modify Template files
         ringHelper.replace(options.protocolFixTemplates, protocolSearches[0], protocolReplaces[0], true);
         // MOdify Worker Files
-        ringHelper.replace(options.workerFiles, protocolSearches[1], protocolReplaces[1]);
+        ringHelper.replace(options.workerFiles, protocolSearches[1], protocolReplaces[1], true);
 
         grunt.log.writeln(Chalk.bold.green('^^^^ END UPDATE APIVERSION, PROTOCOL, SETTINGS(ANALYTICS,DEBUGENABLED,SECURE) ETC ^^^^ '));
     }
