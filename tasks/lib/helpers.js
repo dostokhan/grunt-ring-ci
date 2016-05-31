@@ -90,6 +90,7 @@ exports.init = function(grunt, options) {
 
     exports.linkFiles = function(srcFiles, template, startTag, endTag, destFiles) {
         var page,
+            counter = 0,
             newPage,
             start,
             end,
@@ -104,7 +105,8 @@ exports.init = function(grunt, options) {
                 return true;
             }
         }).map(function (filepath) {
-            grunt.log.writeln(filepath);
+            counter++;
+            //grunt.log.writeln(filepath);
             return Util.format(template, filepath);
         });
 
@@ -133,7 +135,7 @@ exports.init = function(grunt, options) {
 
 				// Insert the scripts
 				grunt.file.write(dest, newPage);
-				grunt.log.writeln(Chalk.cyan('File "' + dest + '" updated.'));
+				grunt.log.writeln(Chalk.cyan('Inserted ' + counter + ' links into File "' + dest));
             }
         });
     };
