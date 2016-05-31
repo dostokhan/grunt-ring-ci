@@ -119,7 +119,7 @@ module.exports = function(grunt) {
 
     function buildModules() {
         grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ BUILD APP MODULES in: ' + options.appBuildPath + 'modules/. $$$$$$$$$$$$$$$$$$$$'));
-        var i,k,d, srcPath, moduleFile,
+        var i,k,d, srcPath, moduleFile, fileName,
             moduleContent = '',
             moduleContentStart = '',
             moduleContentEnd = '';
@@ -135,9 +135,10 @@ module.exports = function(grunt) {
             moduleFile = ringHelper.unixifyPath(options.appBuildPath + 'modules/' + options.appModules[k].name + '.module.js');
             for(i = 0; i < options.appModules[k].files.length; i++) {
                 srcPath = ringHelper.unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
+                fileName = srcPath.substr(srcPath.lastIndexOf('/') + 1);
                 if (grunt.file.exists(srcPath)) {
                     // concat contents
-                    moduleContent += String(grunt.file.read(srcPath, {encoding:'utf8'}));
+                    moduleContent += fileName + "\n" + String(grunt.file.read(srcPath, {encoding:'utf8'}));
                     //grunt.log.writeln(Chalk.cyan(srcPath));
                 } else {
                     grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));
