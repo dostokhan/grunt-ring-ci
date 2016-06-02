@@ -321,7 +321,8 @@ module.exports = function(grunt) {
             }
         }
 
-        grunt.file.write(appMinFile, appScriptsContent);
+        grunt.file.write(appMinFile, Uglifyjs.minify(appScriptsContent, uglifyOptions).code);
+
         SCRIPT_FILES = [appMinFile];
         grunt.log.writeln(Chalk.red('App Script: ' + appMinFile));
 
