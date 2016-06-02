@@ -208,17 +208,16 @@ module.exports = function(grunt) {
             srcPath = options.appSrcPath + options.workerFiles[i].substr(0, options.workerFiles[i].lastIndexOf('/') + 1);
             workerFile = options.workerFiles[i].substr(options.workerFiles[i].lastIndexOf('/') + 1);
 
-            grunt.log.writeln('worker src path: ' + srcPath+workerFile);
+            grunt.log.writeln(Chalk.blue('worker file: ' + srcPath+workerFile));
             if (grunt.file.exists(srcPath+workerFile)) {
                 var mainWorker = String(grunt.file.read(srcPath+workerFile, {encoding:'utf8'}));
                 // process all worker files
                 regexMatches = mainWorker.match(importScriptsRegex);
                 if (regexMatches && regexMatches.length > 0) {
-                    grunt.log.writeflags(regexMatches);
 
                     for(var j = 0; j < regexMatches.length; j++) {
                         srcFile = regexMatches[j].substr(15, regexMatches[j].length-15-3);
-                        grunt.log.writeln('worker src file: ' + srcFile);
+                        grunt.log.writeln('worker support files: ' + srcFile);
                         if (grunt.file.exists(srcPath+srcFile)) {
                             if (options.minifyScripts === true || options.target === 'live') {
                                 // insert all supportFiles inside worker file content;
