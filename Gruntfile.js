@@ -18,7 +18,8 @@ module.exports = function(grunt) {
     ];
 
     var settingsFile = ['config/settings.constant.js'];
-    var workerFiles = ['init-worker.js', 'services/chat.connector.js'];
+    var protocolFixScripts = ['init-worker.js', 'services/chat.connector.js'];
+    var workerFiles = ['worker/com'];
     var protocolFixTemplates = [
         "webapp/index.html",
         "webapp/dash.html",
@@ -571,7 +572,7 @@ module.exports = function(grunt) {
     ring_ci: {
         local: {
             options: {
-                target: 'local',
+                target: 'live',
                 protocol: 'nonssl',
                 apiVersion: '141',
                 branch: 'develop',
@@ -584,7 +585,8 @@ module.exports = function(grunt) {
                 linkerFiles: linkerFiles,
                 settingsFile: settingsFile,
                 protocolFixTemplates: protocolFixTemplates,
-                workerFiles : workerFiles,
+                protocolFixScripts: protocolFixScripts,
+                workerFiles: workerFiles,
                 appModules: appModules,
                 appStyles: appStyles
             },
