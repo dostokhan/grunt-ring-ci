@@ -11,6 +11,7 @@
 var Chalk = require('chalk');
 var Cssmin = require('cssmin');
 var Uglifyjs = require('uglify-js');
+var Crypto = require('crypto');
 
 module.exports = function(grunt) {
 
@@ -195,7 +196,13 @@ module.exports = function(grunt) {
 
     function prepareVendorScripts() {
         grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ BUILDING app.vendor.min $$$$$$$$$$$$$$$$$$$$'));
-        var srcPath, scriptContent = '', minifiedScript = '', err;
+
+        var vendorMinFile = 'js/' + Crypto.createHash('md5').update('app-vendor.min.js' + new Date().getTime()).digest('hex') + '.js',
+            srcPath,
+            scriptContent = '',
+            minifiedScript = '',
+            err;
+
         for(var i = 0; i < options.vendorFiles.length; i++) {
             srcPath = ringHelper.unixifyPath(options.vendorFiles[i]);
             if (grunt.file.exists(srcPath)) {
@@ -211,12 +218,12 @@ module.exports = function(grunt) {
                         if (e.message) {
                             err.message += '\n' + e.message + '. \n';
                             if (e.line) {
-                                err.message += 'Line ' + e.line + ' in ' + src + '\n';
+                                err.message += 'Line ' + e.line + ' in ' + srcPath + '\n';
                             }
 
                         }
                         err.origError = e;
-                        grunt.log.warn(Chalk.bold.red('Uglifying source ' + src + ' failed.'));
+                        grunt.log.warn(Chalk.bold.red('Uglifying source ' + srcPath + ' failed.'));
                         grunt.fail.error(err);
                     }
                 } else {
@@ -228,30 +235,43 @@ module.exports = function(grunt) {
                 grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));
             }
         }
-        var vendorFile = ringHelper.unixifyPath(options.appBuildPath + 'vendor.min.js');
-        VENDOR_SCRIPTS = [vendorFile];
-        grunt.log.writeln(Chalk.red('Vendor Script: ' + vendorFile));
-        grunt.file.write(vendorFile, minifiedScript);
+
+        grunt.file.write(ringHelper.unixifyPath(vendorMinFile), minifiedScript);
+        VENDOR_SCRIPTS = [vendorMinFile];
+        grunt.log.writeln(Chalk.red('Vendor Script: ' + vendorMinFile));
 
         grunt.log.writeln(Chalk.bold.green('^^^^ END BUILDING app.vendor.min  ^^^^ '));
     }
 
     function uglifyModules() {
-        SCRIPT_FILES = [];
         grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ UGLIFY SOURCE MODULES $$$$$$$$$$$$$$$$$$$$'));
-        var src,
-            fileName,
-            lastDotIndex,
-            dest = 'js/dist/';
 
-        for(var i = 0; i < options.appModules.length; i++) {
-            dest = 'js/dist/';
-            src = ringHelper.unixifyPath(options.appBuildPath + 'modules/' +  options.appModules[i].name + '.module.js');
-            fileName = src.substr(src.lastIndexOf('/') + 1);
-            dest += fileName.substr(0, fileName.lastIndexOf('.')) + '.min' + fileName.substr(fileName.lastIndexOf('.'));
-            ringHelper.uglify(src, dest, uglifyOptions);
-            SCRIPT_FILES.push(dest);
+        var appMinFile = 'js/' + Crypto.createHash('md5').update('app.min.js' + new Date().getTime()).digest('hex') + '.js',
+            src,
+            fileName,
+            appScriptsContent = '',
+            lastDotIndex;
+
+        //for(var i = 0; i < options.appModules.length; i++) {
+            //dest = 'js/';
+            //src = ringHelper.unixifyPath(options.appBuildPath + 'modules/' +  options.appModules[i].name + '.module.js');
+            //fileName = src.substr(src.lastIndexOf('/') + 1);
+            //dest += fileName.substr(0, fileName.lastIndexOf('.')) + '.min' + fileName.substr(fileName.lastIndexOf('.'));
+            //ringHelper.uglify(src, dest, uglifyOptions);
+            //SCRIPT_FILES.push(dest);
+        //}
+        //
+        for(var i = 0; i < SCRIPT_FILES; i++) {
+            if (grunt.file.exists(SCRIPT_FILES[i])) {
+                appScriptsContent += String(grunt.file.read(ringHelper.unixifyPat(SCRIPT_FILES[i])));
+            } else {
+                grunt.fail.warn(Chalk.bold.red('File: ' + SCRIPT_FILES[i]+ ' does not exist'));
+            }
         }
+
+        grunt.file.write(appMinFile, appScriptsContent);
+        SCRIPT_FILES = [appMinFile];
+        grunt.log.writeln(Chalk.red('App Script: ' + appMinFile));
 
         grunt.log.writeln(Chalk.bold.green('^^^^ END UGLIFY SOURCE MODULES   ^^^^ '));
     }
@@ -259,7 +279,10 @@ module.exports = function(grunt) {
 
     function minifyStyles() {
         grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ MINIFY STYLESHEETS USING CSSMIN $$$$$$$$$$$$$$$$$$$$'));
-        var cssfile, minifiedStyle = '';
+
+        var stylesMinFile= 'css/' + Crypto.createHash('md5').update('styles.min.css' + new Date().getTime()).digest('hex') + '.css',
+            cssfile,
+            minifiedStyle = '';
         for(var i = 0; i < options.appStyles.length; i++) {
             cssfile = ringHelper.unixifyPath(options.appStyles[i]);
             if (!grunt.file.exists(cssfile)) {
@@ -269,8 +292,10 @@ module.exports = function(grunt) {
             }
         }
 
-        grunt.file.write('css/styles.min.css', Cssmin(minifiedStyle));
-        STYLE_SHEETS = ['css/styles.min.css'];
+        grunt.file.write(stylesMinFile, Cssmin(minifiedStyle));
+        STYLE_SHEETS = [stylesMinFile];
+        grunt.log.writeln(Chalk.red('App Styles: ' + appMinFile));
+
         grunt.log.writeln(Chalk.bold.green('^^^^ END MINIFY STYLESHEETS USING CSSMIN   ^^^^ '));
     }
 
@@ -330,7 +355,6 @@ module.exports = function(grunt) {
     // 7. link javascript files
     grunt.log.writeln();
     linkScriptsStyles();
-
 
   });
 
