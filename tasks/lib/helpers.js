@@ -74,7 +74,6 @@ exports.init = function(grunt, options) {
                 if (e.line) {
                     err.message += 'Line ' + e.line + ' in ' + src + '\n';
                 }
-
             }
             err.origError = e;
             grunt.log.warn(Chalk.bold.red('Uglifying source ' + src + ' failed.'));

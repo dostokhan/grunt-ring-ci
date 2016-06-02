@@ -12,6 +12,7 @@ var Chalk = require('chalk');
 var Cssmin = require('cssmin');
 var Uglifyjs = require('uglify-js');
 var Crypto = require('crypto');
+var Annotate = require*('ng-annotate');
 
 module.exports = function(grunt) {
 
@@ -309,20 +310,12 @@ module.exports = function(grunt) {
             src,
             fileName,
             appScriptsContent = '',
+            content = '',
             lastDotIndex;
 
-        //for(var i = 0; i < options.appModules.length; i++) {
-            //dest = 'js/';
-            //src = ringHelper.unixifyPath(options.appBuildPath + 'modules/' +  options.appModules[i].name + '.module.js');
-            //fileName = src.substr(src.lastIndexOf('/') + 1);
-            //dest += fileName.substr(0, fileName.lastIndexOf('.')) + '.min' + fileName.substr(fileName.lastIndexOf('.'));
-            //ringHelper.uglify(src, dest, uglifyOptions);
-            //SCRIPT_FILES.push(dest);
-        //}
-        //
-        for(var i = 0; i < SCRIPT_FILES; i++) {
+        for(var i = 0; i < SCRIPT_FILES.length; i++) {
             if (grunt.file.exists(SCRIPT_FILES[i])) {
-                appScriptsContent += String(grunt.file.read(SCRIPT_FILES[i], {encoding:'utf8'}));
+                appScriptsContent += String(grunt.file.read(SCRIPT_FILES[i], {encoding:'utf8'})) + '\n';
             } else {
                 grunt.fail.warn(Chalk.bold.red('File: ' + SCRIPT_FILES[i]+ ' does not exist'));
             }
