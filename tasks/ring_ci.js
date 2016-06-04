@@ -75,7 +75,7 @@ module.exports = function(grunt) {
                 buildPath = ringHelper.unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
                 //grunt.log.writeln('src:' + srcPath + ' dest:' + buildPath);
                 if (grunt.file.exists(srcPath)) {
-                    if ((options.minifyScripts || options.target === 'live') && options.appModules[k].name !== 'globals') {
+                    if (!(options.minifyScripts || options.target === 'live') && options.appModules[k].name !== 'globals') {
                         grunt.file.write( buildPath,
                                 "(function() { 'use strict'; \n" +
                                     grunt.file.read(srcPath, {encoding: 'utf8'}) +
