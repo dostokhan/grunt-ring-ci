@@ -76,13 +76,13 @@ module.exports = function(grunt) {
                 //grunt.log.writeln('src:' + srcPath + ' dest:' + buildPath);
                 if (grunt.file.exists(srcPath)) {
                     if (options.minifyScripts || options.target === 'live' || options.appModules[k].name !== 'globals') {
-                        grunt.file.copy(srcPath, buildPath);
-                    } else {
                         grunt.file.write( buildPath,
                                 "(function() { 'use strict'; \n" +
                                     grunt.file.read(srcPath, {encoding: 'utf8'}) +
                                  " \n})();"
                         );
+                    } else {
+                        grunt.file.copy(srcPath, buildPath);
                     }
                     srcFiles.push(buildPath);
                     //grunt.log.writeln(Chalk.cyan(srcPath) + ' > ' + Chalk.red(buildPath)) ;

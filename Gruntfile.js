@@ -69,6 +69,14 @@ module.exports = function(grunt) {
             //]
         //},
         {
+            name: 'globals',
+            dependencies: [],
+            files: [
+                'init-worker.js',
+                'wat.fall.js'
+            ]
+        },
+        {
             name: 'ringid',
             dependencies:['config', 'connector'],
             files: [
@@ -589,9 +597,9 @@ module.exports = function(grunt) {
                 branch: 'develop',
                 appSrcPath: 'webapp/app/',
                 appBuildPath: 'webapp/js/build/',
-                minifyStyles: true,
-                minifyScripts: true,
-                buildModules: true
+                minifyStyles: false,
+                minifyScripts: false,
+                buildModules: false
             },
             files: {}
         },
