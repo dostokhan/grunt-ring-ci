@@ -570,25 +570,28 @@ module.exports = function(grunt) {
 
     // Configuration to be run (and then tested).
     ring_ci: {
+        options: {
+            //custom tasks files
+            vendorFiles: vendorFiles,
+            linkerFiles: linkerFiles,
+            settingsFile: settingsFile,
+            protocolFixTemplates: protocolFixTemplates,
+            protocolFixScripts: protocolFixScripts,
+            workerFiles: workerFiles,
+            appModules: appModules,
+            appStyles: appStyles
+        },
         local: {
             options: {
-                target: 'live',
-                protocol: 'nonssl',
+                target: 'dev',
+                protocol: 'ssl',
                 apiVersion: '141',
                 branch: 'develop',
                 appSrcPath: 'webapp/app/',
                 appBuildPath: 'webapp/js/build/',
-                minifyStyles: false,
-                minifyScripts: false,
-                //custom tasks files
-                vendorFiles: vendorFiles,
-                linkerFiles: linkerFiles,
-                settingsFile: settingsFile,
-                protocolFixTemplates: protocolFixTemplates,
-                protocolFixScripts: protocolFixScripts,
-                workerFiles: workerFiles,
-                appModules: appModules,
-                appStyles: appStyles
+                minifyStyles: true,
+                minifyScripts: true,
+                buildModules: true
             },
             files: {}
         },
@@ -602,14 +605,6 @@ module.exports = function(grunt) {
                 appBuildPath: 'webapp/js/build/',
                 minifyStyles: true,
                 minifyScripts: true,
-                //custom tasks files
-                vendorFiles: vendorFiles,
-                linkerFiles: linkerFiles,
-                settingsFile: settingsFile,
-                protocolFixTemplates: protocolFixTemplates,
-                workerFiles : workerFiles,
-                appModules: appModules,
-                appStyles: appStyles
             },
             files: {}
         },

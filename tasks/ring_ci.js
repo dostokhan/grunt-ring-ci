@@ -321,8 +321,9 @@ module.exports = function(grunt) {
             }
         }
 
-        grunt.file.write(appMinFile, Uglifyjs.minify(appScriptsContent, uglifyOptions).code);
+        grunt.file.write(appMinFile, appScriptsContent);
 
+        ringHelper.uglify(appMinFile, appMinFile, uglifyOptions);
         SCRIPT_FILES = [appMinFile];
         grunt.log.writeln(Chalk.red('App Script: ' + appMinFile));
 
@@ -395,21 +396,21 @@ module.exports = function(grunt) {
 
     prepareWorkerFiles();
      //5. uglify modules if necessary
-    grunt.log.writeln();
+    //grunt.log.writeln();
     if (options.minifyScripts || options.target === 'live') {
         prepareVendorScripts();
         uglifyModules();
     }
-    // 6. minify css if necessary
-    grunt.log.writeln();
-    if (options.minifyStyles || options.target === 'live') {
-        minifyStyles();
-    } else {
-        STYLE_SHEETS = options.appStyles;
-    }
-    // 7. link javascript files
-    grunt.log.writeln();
-    linkScriptsStyles();
+    //// 6. minify css if necessary
+    //grunt.log.writeln();
+    //if (options.minifyStyles || options.target === 'live') {
+        //minifyStyles();
+    //} else {
+        //STYLE_SHEETS = options.appStyles;
+    //}
+    //// 7. link javascript files
+    //grunt.log.writeln();
+    //linkScriptsStyles();
 
   });
 
