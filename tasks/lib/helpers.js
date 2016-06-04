@@ -14,9 +14,9 @@ exports.init = function(grunt, options) {
         return isWindows ?  filePath.replace(/\\/g, '/') : filePath;
     };
 
-    exports.replace = function (files, search, replace, doNotPrependPath) {
+    exports.replace = function (files, search, replace, doNotPrependPath, noDebugOutput) {
         // fix file paths with buildpath
-
+        noDebugOutput = !!noDebugOutput;
         for(var i = 0; i < files.length; i++) {
             files[i] = exports.unixifyPath(
                 !!doNotPrependPath ?  files[i] :  options.appBuildPath + files[i]
@@ -36,16 +36,16 @@ exports.init = function(grunt, options) {
             if (!grunt.file.exists(filepath)) {
                 grunt.fail.warn(Chalk.bold.red('Source file "' + filepath + '" not found.'));
             } else {
-                grunt.log.writeln('File:' + Chalk.yellow(filepath));
+                !noDebugOutput && grunt.log.writeln('File:' + Chalk.yellow(filepath));
                 fileContent = grunt.file.read(filepath, {encoding:'utf8'});
                 if (search instanceof Array) {
                     updatedContent = fileContent;
                     for(var i = 0; i < search.length; i++) {
-                        grunt.log.writeln(i + '# Replace:' + Chalk.cyan(search[i]) + ' With:' + Chalk.red(replace[i]));
+                        !noDebugOutput && grunt.log.writeln(i + '# Replace:' + Chalk.cyan(search[i]) + ' With:' + Chalk.red(replace[i]));
                         if (search[i].test(String(updatedContent))) {
                             updatedContent = String(updatedContent).replace(search[i], replace[i]);
                         } else {
-                            grunt.log.warn(Chalk.bold.red('No Match Found'));
+                            !noDebugOutput && grunt.log.warn(Chalk.bold.red('No Match Found'));
                         }
                     }
                 } else {
@@ -77,7 +77,7 @@ exports.init = function(grunt, options) {
             }
             err.origError = e;
             grunt.log.warn(Chalk.bold.red('Uglifying source ' + src + ' failed.'));
-            grunt.fail.error(err);
+            grunt.fail.warn(err);
         }
 
         var output = Util.format(uglifyOptions.banner, grunt.template.today('yyyy-mm-dd')) + result.code;

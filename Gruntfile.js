@@ -611,6 +611,7 @@ module.exports = function(grunt) {
                 branch: 'master',
                 appSrcPath: 'webapp/app/',
                 appBuildPath: 'webapp/js/build/',
+                buildModules: false,
                 minifyStyles: true,
                 minifyScripts: true,
             },

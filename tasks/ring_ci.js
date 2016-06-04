@@ -75,7 +75,7 @@ module.exports = function(grunt) {
                 buildPath = ringHelper.unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
                 //grunt.log.writeln('src:' + srcPath + ' dest:' + buildPath);
                 if (grunt.file.exists(srcPath)) {
-                    if (options.minifyScripts || options.target === 'live' || options.appModules[k].name !== 'globals') {
+                    if ((options.minifyScripts || options.target === 'live') && options.appModules[k].name !== 'globals') {
                         grunt.file.write( buildPath,
                                 "(function() { 'use strict'; \n" +
                                     grunt.file.read(srcPath, {encoding: 'utf8'}) +
@@ -195,9 +195,10 @@ module.exports = function(grunt) {
             debugRegex = /DIGEST_DEBUG_START([\s\S]*?)(DIGEST_DEBUG_END)/gm,
             ringloggerRegex = /RingLogger([\s\S]*?;)/g;
 
+        grunt.log.writeln(Chalk.bold.blue('Removed DIGEST_DEBUG && RingLogger from: ' + files.length + ' files'));
         for(i = 0; i < files.length; i++) {
-            moduleFile = ringHelper.unixifyPath(options.appBuildPath + 'modules/' +  options.appModules[i].name + '.module.js');
-            ringHelper.replace(moduleFile, [debugRegex, ringloggerRegex], ['',''], true);
+            //moduleFile = ringHelper.unixifyPath(options.appBuildPath + 'modules/' +  options.appModules[i].name + '.module.js');
+            ringHelper.replace(files[i], [debugRegex, ringloggerRegex], ['',''], true, true);
         }
         grunt.log.writeln(Chalk.bold.green('^^^^ END REMOVE DEBUG CODE from APP MODULES  ^^^^ '));
     }
@@ -266,7 +267,8 @@ module.exports = function(grunt) {
         grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ BUILDING app.vendor.min $$$$$$$$$$$$$$$$$$$$'));
 
         var vendorMinFile = 'js/' + Crypto.createHash('md5').update('app-vendor.min.js' + new Date().getTime()).digest('hex') + '.js',
-            srcPath,
+            srcPath = '',
+            minSrcPath = '',
             scriptContent = '',
             minifiedScript = '',
             err;
@@ -274,27 +276,34 @@ module.exports = function(grunt) {
         for(var i = 0; i < options.vendorFiles.length; i++) {
             srcPath = ringHelper.unixifyPath(options.vendorFiles[i]);
             if (grunt.file.exists(srcPath)) {
-                // concat contents
-                scriptContent = String(grunt.file.read(srcPath, {encoding:'utf8'}));
+                // is a minified file?
                 if (srcPath.indexOf('min') === -1) {
-                    // not minified code. minify it
-                    grunt.log.writeln(Chalk.cyan('MINIFYING File: ' + srcPath ));
-                    try {
-                        minifiedScript += Uglifyjs.minify(srcPath, uglifyOptions).code;
-                    } catch(e) {
-                        err = new Error('Uglification failed.');
-                        if (e.message) {
-                            err.message += '\n' + e.message + '. \n';
-                            if (e.line) {
-                                err.message += 'Line ' + e.line + ' in ' + srcPath + '\n';
-                            }
+                    minSrcPath = srcPath.substr(0, srcPath.lastIndexOf('.')) + '.min' + srcPath.substr(srcPath.lastIndexOf('.'));
+                    grunt.log.writeln('Got minified file: ' + minSrcPath);
+                    // exists a minified file already in the same dir of the src file?
+                    if (grunt.file.exists(minSrcPath)) {
+                        minifiedScript += grunt.file.read(minSrcPath, {encoding: 'utf8'});
+                    } else {
+                        // no minified file. uglify and build one
+                        grunt.log.writeln(Chalk.cyan('MINIFYING File: ' + srcPath ));
+                        try {
+                            minifiedScript += Uglifyjs.minify(srcPath, uglifyOptions).code;
+                        } catch(e) {
+                            err = new Error('Uglification failed.');
+                            if (e.message) {
+                                err.message += '\n' + e.message + '. \n';
+                                if (e.line) {
+                                    err.message += 'Line ' + e.line + ' in ' + srcPath + '\n';
+                                }
 
+                            }
+                            err.origError = e;
+                            grunt.log.warn(Chalk.bold.red('Uglifying source ' + srcPath + ' failed.'));
+                            grunt.warn.error(err);
                         }
-                        err.origError = e;
-                        grunt.log.warn(Chalk.bold.red('Uglifying source ' + srcPath + ' failed.'));
-                        grunt.fail.error(err);
                     }
                 } else {
+                    scriptContent = String(grunt.file.read(srcPath, {encoding:'utf8'}));
                     grunt.log.writeln(Chalk.cyan('File: ' + srcPath ));
                     // already minified  no need to minify
                     minifiedScript += scriptContent;
@@ -330,7 +339,6 @@ module.exports = function(grunt) {
         }
 
         grunt.file.write(appMinFile, appScriptsContent);
-
         ringHelper.uglify(appMinFile, appMinFile, uglifyOptions);
         SCRIPT_FILES = [appMinFile];
         grunt.log.writeln(Chalk.red('App Script: ' + appMinFile));
