@@ -75,7 +75,15 @@ module.exports = function(grunt) {
                 buildPath = ringHelper.unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
                 //grunt.log.writeln('src:' + srcPath + ' dest:' + buildPath);
                 if (grunt.file.exists(srcPath)) {
-                    grunt.file.copy(srcPath, buildPath);
+                    if (options.minifyScripts || options.target === 'live') {
+                        grunt.file.write( buildPath,
+                                "(function() { 'use strict'; \n" +
+                                    grunt.file.read(srcPath, {encoding: 'utf8'}) +
+                                 " \n})();"
+                        );
+                    } else {
+                        grunt.file.copy(srcPath, buildPath);
+                    }
                     srcFiles.push(buildPath);
                     //grunt.log.writeln(Chalk.cyan(srcPath) + ' > ' + Chalk.red(buildPath)) ;
                 } else {
