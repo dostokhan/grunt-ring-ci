@@ -77,9 +77,9 @@ module.exports = function(grunt) {
                 if (grunt.file.exists(srcPath)) {
                     if (!(options.minifyScripts || options.target === 'live') && options.appModules[k].name !== 'globals') {
                         grunt.file.write( buildPath,
-                                "(function() { 'use strict'; \n" +
+                                "(function(angular, window) { 'use strict'; \n" +
                                     grunt.file.read(srcPath, {encoding: 'utf8'}) +
-                                 " \n})();"
+                                 " \n})(angular, window);"
                         );
                     } else {
                         grunt.file.copy(srcPath, buildPath);
@@ -138,8 +138,8 @@ module.exports = function(grunt) {
         // build APP MODULES
         for(k = 0; k < options.appModules.length; k++) {
             moduleContent = '';
-            moduleContentStart = "(function() { 'use strict'; ";
-            moduleContentEnd = "})();";
+            moduleContentStart = "(function(angular, window) { 'use strict'; ";
+            moduleContentEnd = "})(angular, window);";
 
             grunt.log.writeln( );
             moduleFile = ringHelper.unixifyPath(options.appBuildPath + 'modules/' + options.appModules[k].name + '.module.js');
