@@ -62,11 +62,17 @@ module.exports = function(grunt) {
         var srcPath = ringHelper.unixifyPath(options.appSrcPath),
             buildPath = ringHelper.unixifyPath(options.appBuildPath);
         // destinations exists? delete and recreate
-        if (grunt.file.exists(buildPath)) {
-            grunt.log.write(Chalk.black('BuildPath:' + buildPath + ' exists. Recreating'));
-            grunt.file.delete(buildPath);
+        if (!grunt.file.exists(buildPath)) {
+            grunt.log.writeln(Chalk.black('BuildPath:' + buildPath + ' does not exists. Creating'));
+            grunt.file.mkdir(buildPath);
         }
-        grunt.file.mkdir(buildPath);
+
+
+        // check if app/developer.config.js exists or create one
+        if (!grunt.file.exists('app/developer.config.js')) {
+            grunt.log.writeln(Chalk.black('Creating app/developer.config.js'));
+            grunt.file.copy('app/developer.config.dist.js', 'app/developer.config.js');
+        }
 
         var i,k;
         for(k = 0; k < options.appModules.length; k++) {
