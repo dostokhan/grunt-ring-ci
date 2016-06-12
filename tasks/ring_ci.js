@@ -147,7 +147,6 @@ module.exports = function(grunt) {
             moduleContentStart = "(function(angular, window) { 'use strict'; ";
             moduleContentEnd = "})(angular, window);";
 
-            grunt.log.writeln( );
             moduleFile = ringHelper.unixifyPath(options.appBuildPath + 'modules/' + options.appModules[k].name + '.module.js');
             if (!options.buildModules) {
                 SCRIPT_FILES.push(moduleFile); // debug enabled.  including all scripts as it is
