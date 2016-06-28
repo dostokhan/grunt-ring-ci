@@ -157,7 +157,7 @@ module.exports = function(grunt) {
                 if (grunt.file.exists(srcPath)) {
                     if (options.buildModules) {
                         // concat contents
-                        moduleContent += '\n// File: ' + fileName + "\n" + + modulecontentStart +  String(grunt.file.read(srcPath, {encoding:'utf8'})) + moduleContentEnd;
+                        moduleContent += '\n// File: ' + fileName + "\n" + moduleContentStart +  String(grunt.file.read(srcPath, {encoding:'utf8'})) + moduleContentEnd;
                     } else {
                         SCRIPT_FILES.push(srcPath); // debug enabled including all scripts as it is
                     }
