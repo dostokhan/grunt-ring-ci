@@ -25,6 +25,8 @@ module.exports = function(grunt) {
                 banner: "/*! @copywrite Ringid.com  %s */\n",
                 footer: '',
                 compress: {
+                    hoist_funs: false,
+                    hoist_vars: false,
                     warnings: false
                 },
                 mangle: {},
