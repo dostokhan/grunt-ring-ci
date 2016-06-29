@@ -27,7 +27,7 @@ module.exports = function(grunt) {
                 compress: {
                     hoist_funs: false,
                     hoist_vars: false,
-                    warnings: false
+                    drop_console: true
                 },
                 mangle: {},
                 beautify: false,
@@ -35,7 +35,7 @@ module.exports = function(grunt) {
                 expression: false,
                 maxLineLen: 32000,
                 ASCIIOnly: false,
-                screwIE8: false,
+                screwIE8: true,
                 quoteStyle: 0
         },
         VENDOR_SCRIPTS = [],
