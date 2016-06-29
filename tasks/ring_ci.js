@@ -112,9 +112,16 @@ module.exports = function(grunt) {
             replaces = ['"apiVersion":' + options.apiVersion],
             protocolSearches,
             protocolReplaces;
-        // set replacement parameters
-        protocolSearches =  (options.protocol === 'ssl') ? [/http:\/\//g, /ws:\/\//g] : [/https:\/\//g, /wss:\/\//g] ;
-        protocolReplaces = (options.protocol === 'ssl') ? ['https://', 'wss://'] : ['http://', 'ws://'];
+
+        if (options.target === 'live') {
+            // set replacement parameters
+            protocolSearches =  (options.protocol === 'ssl') ? [/http:\/\/dev|http:\/\//g, /ws:\/\//g] : [/https:\/\/dev|https:\/\//g, /wss:\/\//g] ;
+            protocolReplaces = (options.protocol === 'ssl') ? ['https://', 'wss://'] : ['http://', 'ws://'];
+        } else {
+            // set replacement parameters
+            protocolSearches =  (options.protocol === 'ssl') ? [/http:\/\//g, /ws:\/\//g] : [/https:\/\//g, /wss:\/\//g] ;
+            protocolReplaces = (options.protocol === 'ssl') ? ['https://', 'wss://'] : ['http://', 'ws://'];
+        }
 
         searches = searches.concat(protocolSearches);
         replaces = replaces.concat(protocolReplaces);
