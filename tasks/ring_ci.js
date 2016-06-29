@@ -214,10 +214,10 @@ module.exports = function(grunt) {
             ringloggerRegex = /RingLogger([\s\S]*?;)/g;
 
         grunt.log.writeln(Chalk.bold.blue('Removed DIGEST_DEBUG && RingLogger from: ' + files.length + ' files'));
-        for(i = 0; i < files.length; i++) {
+        //for(i = 0; i < files.length; i++) {
             //moduleFile = ringHelper.unixifyPath(options.appBuildPath + 'modules/' +  options.appModules[i].name + '.module.js');
-            ringHelper.replace(files[i], [debugRegex, ringloggerRegex], ['',''], true, true);
-        }
+            ringHelper.replace(files, [debugRegex, ringloggerRegex], ['',''], true, true);
+        //}
         grunt.log.writeln(Chalk.bold.green('^^^^ END REMOVE DEBUG CODE from APP MODULES  ^^^^ '));
     }
 
