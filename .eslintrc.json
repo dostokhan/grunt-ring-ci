@@ -1,0 +1,36 @@
+{
+    "env": {
+        "browser": true
+    },
+    "extends": "eslint:recommended",
+    "fix": true,
+    "maxErrors": 50,
+    "maxWarnings": 50,
+    "rules": {
+        "indent": [
+            "error",
+            4
+        ],
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+        "no-console": "off"
+    },
+    "globals": {
+        "angular": true,
+        "Cookies": true,
+        "RingLogger": true,
+        "DataView": true,
+        "ArrayBuffer": true,
+        "Uint8Array": true
+    }
+}

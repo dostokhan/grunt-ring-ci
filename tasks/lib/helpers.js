@@ -2,6 +2,7 @@
 
 
 var Chalk = require('chalk');
+var Eslint = require('eslint');
 var Util = require('util');
 var Uglifyjs = require('uglify-js');
 
@@ -12,6 +13,53 @@ exports.init = function(grunt, options) {
 
     exports.unixifyPath = function (filePath) {
         return isWindows ?  filePath.replace(/\\/g, '/') : filePath;
+    };
+
+    exports.lintScript = function(fileSrc, opts) {
+        //var opts = {
+            //outputFile: false,
+            //quiet: false,
+            //maxWarnings: -1
+        //};
+        grunt.log.writeln(fileSrc);
+        grunt.log.writeflags(opts);
+        var engine = new Eslint.CLIEngine(opts),
+            formatter = Eslint.CLIEngine.getFormatter(opts.format),
+            report;
+
+        if (!formatter) {
+            grunt.log.warn(Chalk.bold.red('Could not find formtter:' + opts.format ));
+            return false;
+        }
+
+
+        try {
+            report = engine.executeOnFiles([fileSrc]);
+        } catch (err){
+            grunt.warn(err);
+            return false;
+        }
+
+        if (opts.fix) {
+            Eslint.CLIEngine.outputFixes(report);
+        }
+
+
+        var results = report.results;
+        console.log(formatter(results));
+
+        if (opts.quiet) {
+            results = Eslint.CLIEngine.getErrorResults(results);
+        }
+
+        var tooManyWarnings = opts.maxWarnings >= 0 && report.warningCount > opts.maxWarnings;
+
+        if (report.errorCount === 0 && tooManyWarnings) {
+             grunt.log.warn(Chalk.bold.red('ESLint found too many warnings (maximum:' + opts.maxWarnings + ')'));
+        }
+
+        return report.errorCount === 0;
+
     };
 
     exports.replace = function (files, search, replace, doNotPrependPath, noDebugOutput) {

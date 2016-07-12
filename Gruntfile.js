@@ -72,8 +72,8 @@ module.exports = function(grunt) {
             name: 'globals',
             dependencies: [],
             files: [
-                'init-worker.js',
-                'wat.fall.js'
+                //'init-worker.js',
+                //'wat.fall.js'
             ]
         },
         {
@@ -81,10 +81,10 @@ module.exports = function(grunt) {
             dependencies:['config', 'connector'],
             files: [
                 //'app.module.js',
-                'app.run.js',
-                'app.routes.js',
-                'app.controller.js',
-                'app.module.js'
+                //'app.run.js',
+                //'app.routes.js',
+                //'app.controller.js',
+                //'app.module.js'
             ]
         },
         {
@@ -92,10 +92,10 @@ module.exports = function(grunt) {
             dependencies: [],
             files: [
                 //'config/config.module.js',
-                'config/settings.constant.js',
-                'config/attribute-codes.constant.js',
-                'config/app-constants.constant.js',
-                'config/actions.constant.js'
+                //'config/settings.constant.js',
+                //'config/attribute-codes.constant.js',
+                //'config/app-constants.constant.js',
+                //'config/actions.constant.js'
             ]
         },
         {
@@ -597,6 +597,9 @@ module.exports = function(grunt) {
                 branch: 'develop',
                 appSrcPath: 'webapp/app/',
                 appBuildPath: 'webapp/js/build/',
+                eslintOptions: {
+                    configFile: '.eslintrc.json'
+                },
                 minifyStyles: false,
                 minifyScripts: false,
                 buildModules: false

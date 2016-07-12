@@ -82,18 +82,22 @@ module.exports = function(grunt) {
                 srcPath = ringHelper.unixifyPath(options.appSrcPath + options.appModules[k].files[i]);
                 buildPath = ringHelper.unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
                 //grunt.log.writeln('src:' + srcPath + ' dest:' + buildPath);
-                if (grunt.file.exists(srcPath)) {
-                    if (!(options.minifyScripts || options.target === 'live') && options.appModules[k].name !== 'globals') {
-                        grunt.file.write( buildPath,
-                                "(function(angular, window) { 'use strict'; \n" +
-                                    grunt.file.read(srcPath, {encoding: 'utf8'}) +
-                                 " \n})(angular, window);"
-                        );
+                if (grunt.file.exists(srcPath) ) {
+                    if (ringHelper.lintScript(srcPath, options.eslintOptions)) {
+                        if (!(options.minifyScripts || options.target === 'live') && options.appModules[k].name !== 'globals') {
+                            grunt.file.write( buildPath,
+                                    "(function(angular, window) { 'use strict'; \n" +
+                                        grunt.file.read(srcPath, {encoding: 'utf8'}) +
+                                     " \n})(angular, window);"
+                            );
+                        } else {
+                            grunt.file.copy(srcPath, buildPath);
+                        }
+                        srcFiles.push(buildPath);
+                        //grunt.log.writeln(Chalk.cyan(srcPath) + ' > ' + Chalk.red(buildPath)) ;
                     } else {
-                        grunt.file.copy(srcPath, buildPath);
+                        grunt.fail.warn(Chalk.bold.red('Linting Failed: ' + srcPath ));
                     }
-                    srcFiles.push(buildPath);
-                    //grunt.log.writeln(Chalk.cyan(srcPath) + ' > ' + Chalk.red(buildPath)) ;
                 } else {
                     grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));
                 }
