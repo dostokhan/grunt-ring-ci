@@ -82,7 +82,7 @@ module.exports = function(grunt) {
                 srcPath = ringHelper.unixifyPath(options.appSrcPath + options.appModules[k].files[i]);
                 buildPath = ringHelper.unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
                 //grunt.log.writeln('src:' + srcPath + ' dest:' + buildPath);
-                if (grunt.file.exists(srcPath) ) {
+                if (grunt.file.exists(srcPath)) {
                     if (ringHelper.lintScript(srcPath, options.eslintOptions)) {
                         if (!(options.minifyScripts || options.target === 'live') && options.appModules[k].name !== 'globals') {
                             grunt.file.write( buildPath,
@@ -96,7 +96,7 @@ module.exports = function(grunt) {
                         srcFiles.push(buildPath);
                         //grunt.log.writeln(Chalk.cyan(srcPath) + ' > ' + Chalk.red(buildPath)) ;
                     } else {
-                        grunt.fail.warn(Chalk.bold.red('Linting Failed: ' + srcPath ));
+                        grunt.fail.fatal(Chalk.bold.red('Linting Failed: ' + srcPath ));
                     }
                 } else {
                     grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));

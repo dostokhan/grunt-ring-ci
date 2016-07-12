@@ -80,22 +80,22 @@ module.exports = function(grunt) {
             name: 'ringid',
             dependencies:['config', 'connector'],
             files: [
-                //'app.module.js',
-                //'app.run.js',
-                //'app.routes.js',
-                //'app.controller.js',
-                //'app.module.js'
+                'app.module.js',
+                'app.run.js',
+                'app.routes.js',
+                'app.controller.js',
+                'app.module.js'
             ]
         },
         {
             name: 'config',
             dependencies: [],
             files: [
-                //'config/config.module.js',
-                //'config/settings.constant.js',
-                //'config/attribute-codes.constant.js',
-                //'config/app-constants.constant.js',
-                //'config/actions.constant.js'
+                'config/config.module.js',
+                'config/settings.constant.js',
+                'config/attribute-codes.constant.js',
+                'config/app-constants.constant.js',
+                'config/actions.constant.js'
             ]
         },
         {
