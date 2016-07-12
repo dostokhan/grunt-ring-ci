@@ -96,7 +96,7 @@ module.exports = function(grunt) {
                         srcFiles.push(buildPath);
                         //grunt.log.writeln(Chalk.cyan(srcPath) + ' > ' + Chalk.red(buildPath)) ;
                     } else {
-                        grunt.warn.error(Chalk.bold.red('Linting Failed: ' + srcPath ));
+                        grunt.fail.warn(Chalk.bold.red('Linting Failed: ' + srcPath ));
                     }
                 } else {
                     grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));
@@ -321,7 +321,7 @@ module.exports = function(grunt) {
                             }
                             err.origError = e;
                             grunt.log.warn(Chalk.bold.red('Uglifying source ' + srcPath + ' failed.'));
-                            grunt.warn.error(err);
+                            grunt.fail.warn(err);
                         }
                     }
                 } else {
