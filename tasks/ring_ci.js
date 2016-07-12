@@ -96,7 +96,7 @@ module.exports = function(grunt) {
                         srcFiles.push(buildPath);
                         //grunt.log.writeln(Chalk.cyan(srcPath) + ' > ' + Chalk.red(buildPath)) ;
                     } else {
-                        grunt.fail.error(Chalk.bold.red('Linting Failed: ' + srcPath ));
+                        grunt.warn.error(Chalk.bold.red('Linting Failed: ' + srcPath ));
                     }
                 } else {
                     grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));
