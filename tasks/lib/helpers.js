@@ -16,13 +16,6 @@ exports.init = function(grunt, options) {
     };
 
     exports.lintScript = function(fileSrc, opts) {
-        //var opts = {
-            //outputFile: false,
-            //quiet: false,
-            //maxWarnings: -1
-        //};
-        grunt.log.writeln(fileSrc);
-        grunt.log.writeflags(opts);
         var engine = new Eslint.CLIEngine(opts),
             formatter = Eslint.CLIEngine.getFormatter(opts.format),
             report;
