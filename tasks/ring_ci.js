@@ -109,6 +109,7 @@ module.exports = function(grunt) {
                             copyFile(srcPath, buildPath, k);
                         } else {
                             grunt.fail.fatal(Chalk.bold.red('Linting Failed: ' + srcPath ));
+                            grunt.fail.warn();
                         }
                     } else {
                         copyFile(srcPath, buildPath, k);
