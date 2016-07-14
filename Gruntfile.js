@@ -579,7 +579,7 @@ module.exports = function(grunt) {
     // Configuration to be run (and then tested).
     ring_ci: {
         options: {
-            eslintModules: [],
+            eslintModules: ['connector'],
             eslintOptions: {
                 configFile: '.eslintrc.json'
             },
