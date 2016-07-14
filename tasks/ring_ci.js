@@ -61,7 +61,13 @@ module.exports = function(grunt) {
     // #COPY all app source files except 'bower_modules' to build path
     function copySrcToBuild() {
         grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ COPY SOURCE FILES from: ' + options.appSrcPath + ' TO :'+ options.appBuildPath + '. $$$$$$$$$$$$$$$$$$$$'));
+        var i,k,
+            lintConfig = options.eslintOptions || {
+                                    configFile: '.eslintrc.json'
+                                };
+
         var srcPath = ringHelper.unixifyPath(options.appSrcPath),
+            enableLinting = (!options.eslintModules || options.eslintModules.length === 0),
             buildPath = ringHelper.unixifyPath(options.appBuildPath);
         // destinations exists? delete and recreate
         if (!grunt.file.exists(buildPath)) {
@@ -76,27 +82,36 @@ module.exports = function(grunt) {
             grunt.file.copy('app/developer.config.dist.js', 'app/developer.config.js');
         }
 
-        var i,k;
+        function copyFile(src, dest, index) {
+            if (!(options.minifyScripts || options.target === 'live') && options.appModules[index].name !== 'globals') {
+                grunt.file.write( dest,
+                        "(function(angular, window) { 'use strict'; \n" +
+                            grunt.file.read(src, {encoding: 'utf8'}) +
+                         " \n})(angular, window);"
+                );
+            } else {
+                grunt.file.copy(src, dest);
+            }
+            srcFiles.push(dest);
+        }
+
         for(k = 0; k < options.appModules.length; k++) {
+            enableLinting = enableLinting || options.eslintModules.indexOf(options.appModules[k].name) > -1;
+
             for(i = 0; i < options.appModules[k].files.length; i++) {
                 srcPath = ringHelper.unixifyPath(options.appSrcPath + options.appModules[k].files[i]);
                 buildPath = ringHelper.unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
                 //grunt.log.writeln('src:' + srcPath + ' dest:' + buildPath);
                 if (grunt.file.exists(srcPath)) {
-                    if (ringHelper.lintScript(srcPath, options.eslintOptions)) {
-                        if (!(options.minifyScripts || options.target === 'live') && options.appModules[k].name !== 'globals') {
-                            grunt.file.write( buildPath,
-                                    "(function(angular, window) { 'use strict'; \n" +
-                                        grunt.file.read(srcPath, {encoding: 'utf8'}) +
-                                     " \n})(angular, window);"
-                            );
+                    //grunt.log.writeln('Module :' + options.appModules[k].name+ ' Lint:' +enableLinting );
+                    if (enableLinting) {
+                        if (ringHelper.lintScript(srcPath, lintConfig)) {
+                            copyFile(srcPath, buildPath, k);
                         } else {
-                            grunt.file.copy(srcPath, buildPath);
+                            grunt.fail.fatal(Chalk.bold.red('Linting Failed: ' + srcPath ));
                         }
-                        srcFiles.push(buildPath);
-                        //grunt.log.writeln(Chalk.cyan(srcPath) + ' > ' + Chalk.red(buildPath)) ;
                     } else {
-                        grunt.fail.fatal(Chalk.bold.red('Linting Failed: ' + srcPath ));
+                        copyFile(srcPath, buildPath, k);
                     }
                 } else {
                     grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));

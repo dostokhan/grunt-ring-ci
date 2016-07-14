@@ -579,6 +579,10 @@ module.exports = function(grunt) {
     // Configuration to be run (and then tested).
     ring_ci: {
         options: {
+            eslintModules: [],
+            eslintOptions: {
+                configFile: '.eslintrc.json'
+            },
             //custom tasks files
             vendorFiles: vendorFiles,
             linkerFiles: linkerFiles,
@@ -597,9 +601,6 @@ module.exports = function(grunt) {
                 branch: 'develop',
                 appSrcPath: 'webapp/app/',
                 appBuildPath: 'webapp/js/build/',
-                eslintOptions: {
-                    configFile: '.eslintrc.json'
-                },
                 minifyStyles: false,
                 minifyScripts: false,
                 buildModules: false
