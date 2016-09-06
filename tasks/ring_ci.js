@@ -70,6 +70,8 @@ module.exports = function(grunt) {
             enableLinting = true, // = (!options.eslintModules || options.eslintModules.length === 0),
             forceEslint = (options.eslintModules.length === 0 || options.appModules.indexOf(options.eslintModules[0]) === -1),
             buildPath = ringHelper.unixifyPath(options.appBuildPath);
+
+        gruntf.log.writeln(Chalk.red('forceEslint: ' + forceEslint));
         // destinations exists? delete and recreate
         if (!grunt.file.exists(buildPath)) {
             grunt.log.writeln(Chalk.black('BuildPath:' + buildPath + ' does not exists. Creating'));
