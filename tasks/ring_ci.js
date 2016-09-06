@@ -76,7 +76,7 @@ module.exports = function(grunt) {
         } else {
             forceEslint = true;
             for (i = 0; i < options.appModules.length; i++) {
-                if (options.appModules[i].indexOf(options.eslintModules[0]) > -1) {
+                if (options.eslintModules[0] === options.appModules[i].name) {
                     forceEslint = false;
                     break;
                 }
