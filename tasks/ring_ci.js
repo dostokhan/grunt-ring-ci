@@ -68,8 +68,21 @@ module.exports = function(grunt) {
 
         var srcPath = ringHelper.unixifyPath(options.appSrcPath),
             enableLinting = true, // = (!options.eslintModules || options.eslintModules.length === 0),
-            forceEslint = (options.eslintModules.length === 0 || options.appModules.indexOf(options.eslintModules[0]) === -1),
-            buildPath = ringHelper.unixifyPath(options.appBuildPath);
+            forceEslint = false,             buildPath = ringHelper.unixifyPath(options.appBuildPath);
+
+
+        if (options.eslintModules.length === 0) {
+            forceEslint = true;
+        } else {
+            forceEslint = true;
+            for (i = 0; i < options.appModules.length; i++) {
+                if (options.appModules[i].indexOf(options.eslintModules[0]) > -1) {
+                    forceEslint = false;
+                    break;
+                }
+            }
+        }
+
 
         grunt.log.writeln(Chalk.red('forceEslint: ' + forceEslint));
         // destinations exists? delete and recreate
