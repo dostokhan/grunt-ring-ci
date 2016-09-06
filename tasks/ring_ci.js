@@ -48,7 +48,7 @@ module.exports = function(grunt) {
       separator: ', ',
         target:'dev',
         protocol:'nonssl',
-        apiversion:'141',
+        apiversion:'145',
         branch:'master'
     });
 
@@ -128,8 +128,8 @@ module.exports = function(grunt) {
     // #TASK update apiversion, protocol, settings(analytics,debugEnabled,secure) etc using regex
     function updateSettings() {
         grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ UPDATE APIVERSION, PROTOCOL, SETTINGS(ANALYTICS,DEBUGENABLED,SECURE) ETC $$$$$$$$$$$$$$$$$$$$'));
-        var searches =  [/(['|"]apiVersion['|"]\s*:\s*[0-9]+)/g],
-            replaces = ['"apiVersion":' + options.apiVersion],
+        var searches =  [/(apiVersion\s*:\s*[0-9]+)/g],
+            replaces = ['apiVersion:' + options.apiVersion],
             protocolSearches,
             protocolReplaces;
 
