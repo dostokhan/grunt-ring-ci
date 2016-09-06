@@ -68,7 +68,7 @@ module.exports = function(grunt) {
 
         var srcPath = ringHelper.unixifyPath(options.appSrcPath),
             enableLinting = true, // = (!options.eslintModules || options.eslintModules.length === 0),
-            forceEslint = (options.eslintModules.length === 0 || options.appModules.indexOf(options.eslintModules[0]) === -1);
+            forceEslint = (options.eslintModules.length === 0 || options.appModules.indexOf(options.eslintModules[0]) === -1),
             buildPath = ringHelper.unixifyPath(options.appBuildPath);
         // destinations exists? delete and recreate
         if (!grunt.file.exists(buildPath)) {
