@@ -68,6 +68,7 @@ module.exports = function(grunt) {
 
         var srcPath = ringHelper.unixifyPath(options.appSrcPath),
             enableLinting = true, // = (!options.eslintModules || options.eslintModules.length === 0),
+            forceEslint = (options.eslintModules.length === 0 || options.appModules.indexOf(options.eslintModules[0]) === -1);
             buildPath = ringHelper.unixifyPath(options.appBuildPath);
         // destinations exists? delete and recreate
         if (!grunt.file.exists(buildPath)) {
@@ -96,7 +97,8 @@ module.exports = function(grunt) {
         }
 
         for(k = 0; k < options.appModules.length; k++) {
-            enableLinting = (!options.eslintModules || options.eslintModules.length === 0) || options.eslintModules.indexOf(options.appModules[k].name) > -1;
+            enableLinting = forceEslint ||
+                (options.eslintModules.indexOf(options.appModules[k].name) > -1);
 
             for(i = 0; i < options.appModules[k].files.length; i++) {
                 srcPath = ringHelper.unixifyPath(options.appSrcPath + options.appModules[k].files[i]);
