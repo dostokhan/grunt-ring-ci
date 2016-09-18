@@ -17,6 +17,7 @@ var Chalk = require('chalk'),
 module.exports = function ringci(grunt) {
   // Please see the Grunt documentation for more information regarding task
   // creation: http://gruntjs.com/creating-tasks
+    var taskSuccess = false;
 
     grunt.registerMultiTask('ring_ci', 'Conginuous Integration for Angularjs 1 SPA', function ringciTask() {
         var uglifyOptions = {
@@ -68,6 +69,7 @@ module.exports = function ringci(grunt) {
                 forceEslint = false,
                 buildPath = ringHelper.unixifyPath(options.appBuildPath);
 
+
             /* eslint-disable max-len */
             grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ COPY SOURCE FILES from: ' + options.appSrcPath + ' TO :' + options.appBuildPath + '. $$$$$$$$$$$$$$$$$$$$'));
             /* eslint-enable max-len */
@@ -86,7 +88,7 @@ module.exports = function ringci(grunt) {
             }
 
 
-            grunt.log.writeln(Chalk.red('forceEslint: ' + forceEslint));
+            grunt.log.writeln(Chalk.bold.red('Linting all Modules: ') + Chalk.bold.green(forceEslint));
         // destinations exists? delete and recreate
             if (!grunt.file.exists(buildPath)) {
                 grunt.log.writeln(Chalk.black('BuildPath:' + buildPath + ' does not exists. Creating'));
@@ -117,10 +119,13 @@ module.exports = function ringci(grunt) {
                 enableLinting = forceEslint ||
                 (options.eslintModules.indexOf(options.appModules[k].name) > -1);
 
+                if (enableLinting) {
+                    grunt.log.writeln(Chalk.bold.green('Module: ' + options.appModules[k].name));
+                }
                 for (i = 0; i < options.appModules[k].files.length; i++) {
                     srcPath = ringHelper.unixifyPath(options.appSrcPath + options.appModules[k].files[i]);
                     buildPath = ringHelper.unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
-                // grunt.log.writeln('src:' + srcPath + ' dest:' + buildPath);
+                    // grunt.log.writeln('src:' + srcPath + ' dest:' + buildPath);
                     if (grunt.file.exists(srcPath)) {
                     // grunt.log.writeln('Module :' + options.appModules[k].name+ ' Lint:' +enableLinting );
                         if (enableLinting) {
@@ -129,16 +134,19 @@ module.exports = function ringci(grunt) {
                             } else {
                                 grunt.fail.fatal(Chalk.bold.red('Linting Failed: ' + srcPath));
                                 grunt.fail.warn();
+                                return false;
                             }
                         } else {
                             copyFile(srcPath, buildPath, k);
                         }
                     } else {
                         grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));
+                        return false;
                     }
                 }
             }
             grunt.log.writeln(Chalk.bold.green('^^^^ END COPYING SOURCE FILES TO BUILD DIRECTORY. ^^^^ '));
+            return true;
         }
 
 
@@ -180,6 +188,7 @@ module.exports = function ringci(grunt) {
             ringHelper.replace(options.protocolFixScripts, protocolSearches[1], protocolReplaces[1]);
 
             grunt.log.writeln(Chalk.bold.green('^^^^ END UPDATE APIVERSION, PROTOCOL, SETTINGS(ANALYTICS,DEBUGENABLED,SECURE) ETC ^^^^ '));
+            return true;
         }
 
         function buildModules() {
@@ -221,6 +230,7 @@ module.exports = function ringci(grunt) {
                         }
                     } else {
                         grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));
+                        return false;
                     }
                 }
 
@@ -253,11 +263,13 @@ module.exports = function ringci(grunt) {
 
 
             grunt.log.writeln(Chalk.bold.green('^^^^ END APP MODULES BUILD. ^^^^ '));
+            return true;
         }
 
 
-        function removeDebugCode(files) {
-            var debugRegex = /DIGEST_DEBUG_START([\s\S]*?)(DIGEST_DEBUG_END)/gm,
+        function removeDebugCode(fileList) {
+            var files = fileList || SCRIPT_FILES,
+                debugRegex = /DIGEST_DEBUG_START([\s\S]*?)(DIGEST_DEBUG_END)/gm,
                 ringloggerRegex = /RingLogger([\s\S]*?;)/g;
 
             grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ REMOVE DEBUG CODE from APP MODULES  $$$$$$$$$$$$$$$$$$$$'));
@@ -265,6 +277,7 @@ module.exports = function ringci(grunt) {
             grunt.log.writeln(Chalk.bold.blue('Removed DIGEST_DEBUG && RingLogger from: ' + files.length + ' files'));
             ringHelper.replace(files, [debugRegex, ringloggerRegex], ['', ''], true, true);
             grunt.log.writeln(Chalk.bold.green('^^^^ END REMOVE DEBUG CODE from APP MODULES  ^^^^ '));
+            return true;
         }
 
 
@@ -304,6 +317,7 @@ module.exports = function ringci(grunt) {
                                 }
                             } else {
                                 grunt.fail.warn(Chalk.bold.red('Worker File ' + srcPath + srcFile + ' Not Found'));
+                                return false;
                             }
                         }
 
@@ -311,17 +325,22 @@ module.exports = function ringci(grunt) {
                         // workerFileContent += grunt.file.read(srcPath + workerFile, {encoding: 'utf8'});
                             grunt.log.writeln('worker file:' + dest + workerFile);
                             grunt.file.write(dest + workerFile, workerFileContent + '\n' + mainWorker);
-                            ringHelper.uglify(dest + workerFile, dest + workerFile, uglifyOptions);
+                            if (!ringHelper.uglify(dest + workerFile, dest + workerFile, uglifyOptions)) {
+                                return false;
+                            }
                         } else {
                             grunt.file.copy((srcPath + workerFile), (dest + workerFile));
                         }
                     } else {
                         grunt.fail.warn(Chalk.bold.red('Import Scripts regex match failed' + srcPath + workerFile));
+                        return false;
                     }
                 } else {
                     grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + workerFile + ' Not found'));
+                    return false;
                 }
             }
+            return true;
         }
 
 
@@ -363,6 +382,7 @@ module.exports = function ringci(grunt) {
                                 err.origError = e;
                                 grunt.log.warn(Chalk.bold.red('Uglifying source ' + srcPath + ' failed.'));
                                 grunt.fail.warn(err);
+                                return false;
                             }
                         }
                     } else {
@@ -373,6 +393,7 @@ module.exports = function ringci(grunt) {
                     }
                 } else {
                     grunt.fail.warn(Chalk.bold.red('File: ' + srcPath + ' does not exist'));
+                    return false;
                 }
             }
 
@@ -381,6 +402,7 @@ module.exports = function ringci(grunt) {
             grunt.log.writeln(Chalk.red('Vendor Script: ' + vendorMinFile));
 
             grunt.log.writeln(Chalk.bold.green('^^^^ END BUILDING app.vendor.min  ^^^^ '));
+            return true;
         }
 
         function uglifyModules() {
@@ -395,15 +417,19 @@ module.exports = function ringci(grunt) {
                     appScriptsContent += String(grunt.file.read(SCRIPT_FILES[i], { encoding: 'utf8' })) + '\n';
                 } else {
                     grunt.fail.warn(Chalk.bold.red('File: ' + SCRIPT_FILES[i] + ' does not exist'));
+                    return false;
                 }
             }
 
             grunt.file.write(appMinFile, appScriptsContent);
-            ringHelper.uglify(appMinFile, appMinFile, uglifyOptions);
+            if (!ringHelper.uglify(appMinFile, appMinFile, uglifyOptions)) {
+                return false;
+            }
             SCRIPT_FILES = [appMinFile];
             grunt.log.writeln(Chalk.red('App Script: ' + appMinFile));
 
             grunt.log.writeln(Chalk.bold.green('^^^^ END UGLIFY SOURCE MODULES   ^^^^ '));
+            return true;
         }
 
 
@@ -419,9 +445,10 @@ module.exports = function ringci(grunt) {
                 cssfile = ringHelper.unixifyPath(options.appStyles[i]);
                 if (!grunt.file.exists(cssfile)) {
                     grunt.fail.warn(Chalk.bold.red('File: ' + cssfile + ' does not exist'));
-                } else {
-                    minifiedStyle += String(grunt.file.read(cssfile, { encoding: 'utf8' }));
+                    return false;
                 }
+
+                minifiedStyle += String(grunt.file.read(cssfile, { encoding: 'utf8' }));
             }
 
             grunt.file.write(stylesMinFile, cssmin(minifiedStyle));
@@ -429,11 +456,13 @@ module.exports = function ringci(grunt) {
             grunt.log.writeln(Chalk.red('App Styles: ' + stylesMinFile));
 
             grunt.log.writeln(Chalk.bold.green('^^^^ END MINIFY STYLESHEETS USING CSSMIN   ^^^^ '));
+            return true;
         }
 
 
         function linkScriptsStyles() {
-            var styleStartTag = '<!--STYLES-->',
+            var i,
+                styleStartTag = '<!--STYLES-->',
                 styleEndTag = '<!--STYLES END-->',
                 styleFileTmpl = '<link rel=\'stylesheet\' type=\'text/css\' href=\'%s\' />',
                 scriptStartTag = '<!--SCRIPTS-->',
@@ -442,6 +471,9 @@ module.exports = function ringci(grunt) {
 
             grunt.log.writeln(Chalk.bold.magenta('$$$$$$$$$$$$$$$$$$$$ LINK SOURCE SCRIPTS AND STYLESHEETS $$$$$$$$$$$$$$$$$$$$'));
 
+            for (i = 0; i < options.linkerFiles.length; i++) {
+                grunt.log.writeln(Chalk.bold.green(options.linkerFiles[i]));
+            }
 
             if (options.target === 'live') {
                 ringHelper.linkFiles(VENDOR_SCRIPTS.concat(SCRIPT_FILES), scriptFileTmpl, scriptStartTag, scriptEndTag, options.linkerFiles);
@@ -452,6 +484,8 @@ module.exports = function ringci(grunt) {
             ringHelper.linkFiles(STYLE_SHEETS, styleFileTmpl, styleStartTag, styleEndTag, options.linkerFiles);
 
             grunt.log.writeln(Chalk.bold.green('^^^^ END LINK SOURCE SCRIPTS AND STYLESHEETS  ^^^^ '));
+
+            return true;
         }
 
     // INITIALIZE
@@ -461,35 +495,55 @@ module.exports = function ringci(grunt) {
     // RUN ALL TASKS
     // 1. copy src to build folder
         grunt.log.writeln();
-        copySrcToBuild();
+        taskSuccess = copySrcToBuild();
+
     // 2. update settings files
-        grunt.log.writeln();
-        updateSettings();
-    // 3. build modules
-        grunt.log.writeln();
-        buildModules();
-    // 4. remove debug codes if necessary
-        grunt.log.writeln();
-        if (options.target === 'live') {
-            removeDebugCode(SCRIPT_FILES);
+        if (taskSuccess) {
+            grunt.log.writeln();
+            // THIS TASK ALWAYS SUCCEEDS intentionally
+            taskSuccess = updateSettings();
         }
 
-        prepareWorkerFiles();
-     // 5. uglify modules if necessary
-        grunt.log.writeln();
-        if (options.minifyScripts || options.target === 'live') {
-            prepareVendorScripts();
-            uglifyModules();
+    // 3. build modules
+        if (taskSuccess) {
+            grunt.log.writeln();
+            taskSuccess = buildModules();
         }
-    // 6. minify css if necessary
-        grunt.log.writeln();
-        if (options.minifyStyles || options.target === 'live') {
-            minifyStyles();
-        } else {
-            STYLE_SHEETS = options.appStyles;
+
+    // 4. remove debug codes if necessary
+        if (taskSuccess && options.target === 'live') {
+            grunt.log.writeln();
+            // THIS TASK ALWAYS SUCCEEDS intentionally
+            taskSuccess = removeDebugCode();
         }
-    // 7. link javascript files
-        grunt.log.writeln();
-        linkScriptsStyles();
+
+    // 5. prepare worker files
+        if (taskSuccess) {
+            grunt.log.writeln();
+            taskSuccess = prepareWorkerFiles();
+        }
+
+     // 6. uglify modules if necessary
+        if (taskSuccess && (options.minifyScripts || options.target === 'live')) {
+            grunt.log.writeln();
+            taskSuccess = prepareVendorScripts();
+            if (taskSuccess) {
+                taskSuccess = uglifyModules();
+            }
+        }
+    // 7. minify css if necessary
+        if (taskSuccess) {
+            if (options.minifyStyles || options.target === 'live') {
+                grunt.log.writeln();
+                taskSuccess = minifyStyles();
+            } else {
+                STYLE_SHEETS = options.appStyles;
+            }
+        }
+    // 8. link javascript files
+        if (taskSuccess) {
+            grunt.log.writeln();
+            linkScriptsStyles();
+        }
     });
 };

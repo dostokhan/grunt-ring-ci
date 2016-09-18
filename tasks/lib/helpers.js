@@ -144,12 +144,14 @@ module.exports.init = function initFunc(grunt, options) {
             err.origError = e;
             grunt.log.warn(Chalk.bold.red('Uglifying source ' + src + ' failed.'));
             grunt.fail.warn(err);
+            return false;
         }
 
         output = Util.format(uglifyOptions.banner, grunt.template.today('yyyy-mm-dd')) + result.code;
 
         grunt.file.write(dest, output);
         grunt.log.writeln(src + ' > ' + dest);
+        return true;
     }
 
 
@@ -210,5 +212,5 @@ module.exports.init = function initFunc(grunt, options) {
     }
 
 
-    // return exports;
+    return exports;
 };
