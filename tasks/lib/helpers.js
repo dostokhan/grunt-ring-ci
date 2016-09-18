@@ -1,34 +1,45 @@
 'use strict';
 
 
-var Chalk = require('chalk');
-var Eslint = require('eslint');
-var Util = require('util');
-var Uglifyjs = require('uglify-js');
+var Chalk = require('chalk'),
+    Eslint = require('eslint'),
+    Util = require('util'),
+    Uglifyjs = require('uglify-js');
 
-exports.init = function(grunt, options) {
+module.exports.init = function initFunc(grunt, options) {
     var exports = {},
+        /* eslint-disable no-undef */
         isWindows = process.platform === 'win32';
+        /* eslint-enable no-undef */
 
 
-    exports.unixifyPath = function (filePath) {
-        return isWindows ?  filePath.replace(/\\/g, '/') : filePath;
-    };
+    exports.unixifyPath = unixifyPath;
+    exports.lintScript = lintScript;
+    exports.replace = replaceFunction;
+    exports.uglify = uglify;
+    exports.linkFiles = linkFiles;
 
-    exports.lintScript = function(fileSrc, opts) {
+    function unixifyPath(filePath) {
+        return isWindows ? filePath.replace(/\\/g, '/') : filePath;
+    }
+
+
+    function lintScript(fileSrc, opts) {
         var engine = new Eslint.CLIEngine(opts),
+            results,
+            tooManyWarnings,
             formatter = Eslint.CLIEngine.getFormatter(opts.format),
             report;
 
         if (!formatter) {
-            grunt.log.warn(Chalk.bold.red('Could not find formtter:' + opts.format ));
+            grunt.log.warn(Chalk.bold.red('Could not find formtter:' + opts.format));
             return false;
         }
 
 
         try {
             report = engine.executeOnFiles([fileSrc]);
-        } catch (err){
+        } catch (err) {
             grunt.warn(err);
             return false;
         }
@@ -38,55 +49,64 @@ exports.init = function(grunt, options) {
         }
 
 
-        var results = report.results;
-        console.log(formatter(results));
+        results = report.results;
+        Chalk.yellow(formatter(results));
 
         if (opts.quiet) {
             results = Eslint.CLIEngine.getErrorResults(results);
         }
 
-        var tooManyWarnings = opts.maxWarnings >= 0 && report.warningCount > opts.maxWarnings;
+        tooManyWarnings = opts.maxWarnings >= 0 && report.warningCount > opts.maxWarnings;
 
         if (report.errorCount === 0 && tooManyWarnings) {
-             grunt.log.warn(Chalk.bold.red('ESLint found too many warnings (maximum:' + opts.maxWarnings + ')'));
+            grunt.log.warn(Chalk.bold.red('ESLint found too many warnings (maximum:' + opts.maxWarnings + ')'));
         }
 
         return report.errorCount === 0;
+    }
 
-    };
-
-    exports.replace = function (files, search, replace, doNotPrependPath, noDebugOutput) {
+    function replaceFunction(files, search, replace, doNotPrependPath, noOutput) {
         // fix file paths with buildpath
-        noDebugOutput = !!noDebugOutput;
-        for(var i = 0; i < files.length; i++) {
+        var noDebugOutput = !!noOutput,
+            filePaths,
+            fileContent,
+            updatedContent,
+            i;
+
+        for (i = 0; i < files.length; i++) {
             files[i] = exports.unixifyPath(
-                !!doNotPrependPath ?  files[i] :  options.appBuildPath + files[i]
+                !!doNotPrependPath ? files[i] : options.appBuildPath + files[i]
             );
         }
 
-        var filePaths = grunt.file.expand(files),
-            fileContent,
-            updatedContent;
+        filePaths = grunt.file.expand(files);
 
         if (!(search instanceof Array)) {
             grunt.log.writeln('# Replace:' + Chalk.cyan(search) + ' With:' + Chalk.red(replace));
         }
-        filePaths.forEach(function(filepath) {
-            //grunt.log.writeln(filepath);
+
+        filePaths.forEach(forEachFunction);
+
+        function forEachFunction(filepath) {
+            // grunt.log.writeln(filepath);
 
             if (!grunt.file.exists(filepath)) {
                 grunt.fail.warn(Chalk.bold.red('Source file "' + filepath + '" not found.'));
             } else {
-                !noDebugOutput && grunt.log.writeln('File:' + Chalk.yellow(filepath));
-                fileContent = grunt.file.read(filepath, {encoding:'utf8'});
+                if (!noDebugOutput) {
+                    grunt.log.writeln('File:' + Chalk.yellow(filepath));
+                }
+                fileContent = grunt.file.read(filepath, { encoding: 'utf8' });
                 if (search instanceof Array) {
                     updatedContent = fileContent;
-                    for(var i = 0; i < search.length; i++) {
-                        !noDebugOutput && grunt.log.writeln(i + '# Replace:' + Chalk.cyan(search[i]) + ' With:' + Chalk.red(replace[i]));
+                    for (i = 0; i < search.length; i++) {
+                        if (!noDebugOutput) {
+                            grunt.log.writeln(i + '# Replace:' + Chalk.cyan(search[i]) + ' With:' + Chalk.red(replace[i]));
+                        }
                         if (search[i].test(String(updatedContent))) {
                             updatedContent = String(updatedContent).replace(search[i], replace[i]);
-                        } else {
-                            !noDebugOutput && grunt.log.warn(Chalk.bold.red('No Match Found'));
+                        } else if (!noDebugOutput) {
+                            grunt.log.warn(Chalk.bold.red('No Match Found'));
                         }
                     }
                 } else {
@@ -99,16 +119,21 @@ exports.init = function(grunt, options) {
                 }
                 grunt.file.write(filepath, updatedContent);
             }
-        });
-    };
+        }
+    }
 
-    exports.uglify = function(src, dest, uglifyOptions) {
-        var result, err ;
-        src = exports.unixifyPath(src);
-        dest = exports.unixifyPath(dest);
+    function uglify(srcPath, destPath, uglifyOptions) {
+        var result,
+            output,
+            src,
+            dest,
+            err;
+        src = exports.unixifyPath(srcPath);
+        dest = exports.unixifyPath(destPath);
+
         try {
             result = Uglifyjs.minify(src, uglifyOptions);
-        } catch(e) {
+        } catch (e) {
             err = new Error('Uglification failed.');
             if (e.message) {
                 err.message += '\n' + e.message + '. \n';
@@ -121,14 +146,14 @@ exports.init = function(grunt, options) {
             grunt.fail.warn(err);
         }
 
-        var output = Util.format(uglifyOptions.banner, grunt.template.today('yyyy-mm-dd')) + result.code;
+        output = Util.format(uglifyOptions.banner, grunt.template.today('yyyy-mm-dd')) + result.code;
 
         grunt.file.write(dest, output);
-        grunt.log.writeln( src + ' > ' + dest);
-    };
+        grunt.log.writeln(src + ' > ' + dest);
+    }
 
 
-    exports.linkFiles = function(srcFiles, template, startTag, endTag, destFiles) {
+    function linkFiles(srcFiles, template, startTag, endTag, destFiles) {
         var page,
             counter = 0,
             newPage,
@@ -136,36 +161,40 @@ exports.init = function(grunt, options) {
             end,
             scripts;
 
-        scripts = srcFiles.filter(function(filepath) {
+        scripts = srcFiles.filter(filterFunc).map(mapFunc);
+
+        function filterFunc(filepath) {
             // Warn on and remove invalid source files (if nonull was set).
             if (!grunt.file.exists(filepath)) {
                 grunt.fail.warn('Source file "' + filepath + '" not found.');
                 return false;
-            } else {
-                return true;
             }
-        }).map(function (filepath) {
+            return true;
+        }
+        function mapFunc(filepath) {
             counter++;
-            //grunt.log.writeln(filepath);
+            // grunt.log.writeln(filepath);
             return Util.format(template, filepath);
-        });
+        }
 
-        grunt.file.expand({}, destFiles).forEach(function(dest) {
+        grunt.file.expand({}, destFiles).forEach(forEachFunc);
+
+        function forEachFunc(dest) {
+            var padding,
+                ind;
             page = grunt.file.read(dest);
             start = page.indexOf(startTag);
             end = page.indexOf(endTag);
 
-            if (start === -1 || end === -1 || start >= end) {
-                 return;
-            } else {
-				var padding ='';
-				var ind = start - 1;
-				while(/[^\S\n]/.test(page.charAt(ind))){
-					padding += page.charAt(ind);
-					ind -= 1;
-				}
-				//console.log('padding length', padding.length);
-				newPage = page.substr(0, start + startTag.length) +
+            if (start !== -1 && end !== -1 && start < end) {
+                padding = '';
+                ind = start - 1;
+                while (/[^\S\n]/.test(page.charAt(ind))) {
+                    padding += page.charAt(ind);
+                    ind -= 1;
+                }
+                // console.log('padding length', padding.length);
+                newPage = page.substr(0, start + startTag.length) +
                          grunt.util.linefeed +
                          padding +
                          scripts.join(grunt.util.linefeed + padding) +
@@ -173,13 +202,13 @@ exports.init = function(grunt, options) {
                          padding +
                          page.substr(end);
 
-				// Insert the scripts
-				grunt.file.write(dest, newPage);
-				grunt.log.writeln(Chalk.cyan('Inserted ' + counter + ' links into File "' + dest));
+                // Insert the scripts
+                grunt.file.write(dest, newPage);
+                grunt.log.writeln(Chalk.cyan('Inserted ' + counter + ' links into File "' + dest));
             }
-        });
-    };
+        }
+    }
 
 
-    return exports;
+    // return exports;
 };
