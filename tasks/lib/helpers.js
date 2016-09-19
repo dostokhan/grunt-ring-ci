@@ -32,6 +32,16 @@ module.exports.init = function initFunc(grunt, options) {
             case 'error':
                 grunt.fail.fatal(Chalk.bold.cyan(task) + ' ' + Chalk.bold.red(input) + (output ? ' > ' + Chalk.yellow(output) : ''));
                 break;
+            case 'info':
+                grunt.log.writeln(Chalk.yellow(task) + ' ' + Chalk.blue(input) + (output ? ' > ' + Chalk.green(output) : ''));
+                break;
+            case 'taskstart':
+                grunt.log.writeln();
+                grunt.log.writeln('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  ' + Chalk.bold.red(task) + '  %%%%%%%%%%%%%%%%%%%');
+                break;
+            case 'taskend':
+                grunt.log.writeln('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  ' + Chalk.bold.green(task) + '  %%%%%%%%%%%%%%%%%%%');
+                break;
             default:
                 grunt.log.writeln(Chalk.bold.cyan(task) + ' ' + Chalk.blue(input) + (output ? ' > ' + Chalk.green(output) : ''));
         }
@@ -91,7 +101,7 @@ module.exports.init = function initFunc(grunt, options) {
             report;
 
         if (!formatter) {
-            grunt.log.warn(Chalk.bold.red('Could not find formtter:' + opts.format));
+            log('error', 'Linting', 'Could not find formtter:', opts.format);
             return false;
         }
 
@@ -118,7 +128,7 @@ module.exports.init = function initFunc(grunt, options) {
         tooManyWarnings = opts.maxWarnings >= 0 && report.warningCount > opts.maxWarnings;
 
         if (report.errorCount === 0 && tooManyWarnings) {
-            grunt.log.warn(Chalk.bold.red('ESLint found too many warnings (maximum:' + opts.maxWarnings + ')'));
+            log('error', 'Linting ', fileSrc, ' Too many warning > ' + opts.maxWarnings);
         }
 
         return report.errorCount === 0;
@@ -141,31 +151,30 @@ module.exports.init = function initFunc(grunt, options) {
         filePaths = grunt.file.expand(files);
 
         if (!(search instanceof Array)) {
-            grunt.log.writeln('# Replace:' + Chalk.cyan(search) + ' With:' + Chalk.red(replace));
+            log('info', 'Replace', search, replace);
         }
 
         filePaths.forEach(forEachFunction);
 
         function forEachFunction(filepath) {
-            // grunt.log.writeln(filepath);
 
             if (!grunt.file.exists(filepath)) {
-                grunt.fail.warn(Chalk.bold.red('Source file "' + filepath + '" not found.'));
+                log('error', 'Replace', filepath, 'Not found');
             } else {
                 if (!noDebugOutput) {
-                    grunt.log.writeln('File:' + Chalk.yellow(filepath));
+                    log('info', 'Replace in File', filepath);
                 }
                 fileContent = grunt.file.read(filepath, { encoding: 'utf8' });
                 if (search instanceof Array) {
                     updatedContent = fileContent;
                     for (i = 0; i < search.length; i++) {
                         if (!noDebugOutput) {
-                            grunt.log.writeln(i + '# Replace:' + Chalk.cyan(search[i]) + ' With:' + Chalk.red(replace[i]));
+                            log('info', 'Replace', search[i], replace[i]);
                         }
                         if (search[i].test(String(updatedContent))) {
                             updatedContent = String(updatedContent).replace(search[i], replace[i]);
                         } else if (!noDebugOutput) {
-                            grunt.log.warn(Chalk.bold.red('No Match Found'));
+                            log('warning', 'Replace', search[i], replace[i]);
                         }
                     }
                 } else {
@@ -173,7 +182,7 @@ module.exports.init = function initFunc(grunt, options) {
                     if (search.test(String(updatedContent))) {
                         updatedContent = String(updatedContent).replace(search, replace);
                     } else {
-                        grunt.log.warn(Chalk.bold.red('No Match Found'));
+                        log('warning', 'Replace', search, replace);
                     }
                 }
                 grunt.file.write(filepath, updatedContent);
@@ -201,15 +210,14 @@ module.exports.init = function initFunc(grunt, options) {
                 }
             }
             err.origError = e;
-            grunt.log.warn(Chalk.bold.red('Uglifying source ' + src + ' failed.'));
-            grunt.fail.warn(err);
+            log('error', 'Uglify', src);
             return false;
         }
 
         output = Util.format(uglifyOptions.banner, grunt.template.today('yyyy-mm-dd')) + result.code;
 
         grunt.file.write(dest, output);
-        grunt.log.writeln(src + ' > ' + dest);
+        log('success', 'Uglify', src, dest);
         return true;
     }
 
@@ -227,14 +235,13 @@ module.exports.init = function initFunc(grunt, options) {
         function filterFunc(filepath) {
             // Warn on and remove invalid source files (if nonull was set).
             if (!grunt.file.exists(filepath)) {
-                grunt.fail.warn('Source file "' + filepath + '" not found.');
+                log('error', 'Linking', filepath, 'Not found');
                 return false;
             }
             return true;
         }
         function mapFunc(filepath) {
             counter++;
-            // grunt.log.writeln(filepath);
             return Util.format(template, filepath);
         }
 
@@ -265,7 +272,7 @@ module.exports.init = function initFunc(grunt, options) {
 
                 // Insert the scripts
                 grunt.file.write(dest, newPage);
-                grunt.log.writeln(Chalk.cyan('Inserted ' + counter + ' links into File "' + dest));
+                log('success', 'Linking', dest, counter);
             }
         }
     }
