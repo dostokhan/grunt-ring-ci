@@ -67,8 +67,10 @@ module.exports.init = function initFunc(grunt, options) {
 
         function escapeString(str) {
             var escapedStr;
+            /* eslint-disable quotes */
             escapedStr = str.replace(/\\/g, '\\\\')
                      .replace(/'/g, "\\'");
+            /* eslint-enable quotes */
             return escapedStr;
         }
 
@@ -157,7 +159,6 @@ module.exports.init = function initFunc(grunt, options) {
         filePaths.forEach(forEachFunction);
 
         function forEachFunction(filepath) {
-
             if (!grunt.file.exists(filepath)) {
                 log('error', 'Replace', filepath, 'Not found');
             } else {
