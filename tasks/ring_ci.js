@@ -103,14 +103,27 @@ module.exports = function ringci(grunt) {
             }
 
             function copyFile(src, dest, index) {
+                var fileContent = grunt.file.read(src, { encoding: 'utf8' });
+
+                if (options.templateReplaceFiles.indexOf(src) > -1) {
+                    // need to remplade templateurl with actual template
+                    ringHelper.log('success', 'templateURLReplace', src);
+                    fileContent = ringHelper.templateURLReplace(fileContent);
+
+                    if (!fileContent) {
+                        ringHelper.log('warning', 'templateURLReplace', 'templateUrl not found');
+                    }
+                }
+
                 if (!(options.minifyScripts || options.target === 'live') && options.appModules[index].name !== 'globals') {
                     grunt.file.write(dest,
                         '(function(angular, window) { \'use strict\'; \n' +
-                            grunt.file.read(src, { encoding: 'utf8' }) +
+                            fileContent +
                          ' \n})(angular, window);'
                 );
                 } else {
-                    grunt.file.copy(src, dest);
+                    // grunt.file.copy(src, dest);
+                    grunt.file.write(dest, fileContent);
                 }
                 srcFiles.push(dest);
             }

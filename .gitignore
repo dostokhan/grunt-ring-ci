@@ -4,6 +4,7 @@ tmp
 .DS_Store
 
 app
+templates
 css
 index.html
 js

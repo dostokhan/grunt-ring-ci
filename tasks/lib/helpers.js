@@ -18,9 +18,68 @@ module.exports.init = function initFunc(grunt, options) {
     exports.replace = replaceFunction;
     exports.uglify = uglify;
     exports.linkFiles = linkFiles;
+    exports.templateURLReplace = templateURLReplace;
+    exports.log = log;
+
+    function log(type, task, input, output) {
+        switch (type) {
+            case 'success':
+                grunt.log.writeln(Chalk.bold.cyan(task) + ' ' + Chalk.blue(input) + (output ? ' > ' + Chalk.green(output) : ''));
+                break;
+            case 'warning':
+                grunt.fail.warn(Chalk.bold.cyan(task) + ' ' + Chalk.bold.red(input) + (output ? ' > ' + Chalk.yellow(output) : ''));
+                break;
+            case 'error':
+                grunt.fail.fatal(Chalk.bold.cyan(task) + ' ' + Chalk.bold.red(input) + (output ? ' > ' + Chalk.yellow(output) : ''));
+                break;
+            default:
+                grunt.log.writeln(Chalk.bold.cyan(task) + ' ' + Chalk.blue(input) + (output ? ' > ' + Chalk.green(output) : ''));
+        }
+    }
 
     function unixifyPath(filePath) {
         return isWindows ? filePath.replace(/\\/g, '/') : filePath;
+    }
+
+
+    function templateURLReplace(fileContent) {
+        var modifiedContent = fileContent.toString(),
+            templateRegex = /templateUrl[\s]*?:[\s]*?'([\w\W]+?)'/g;
+
+            // regex = /(\/{2,}([\s]+)?)?templateUrl\s?:([\s]+)?'([\w\W]+?)'(,)?/g,
+            // full = /(\/{2,}([\s]+)?)?templateUrl\s?:([\s]+)?'([\w\W]+?)'(,)?(([\n]+)?template\s?:([\s]+)?'([\w\W]+?)([^\\]')(,)?([\n]+)?)?/g,
+            // regexw = /template\s?:([\s]+)?'([\w\W]+?)([^\\]')(,)?([\n]+)?/g;
+
+
+        if (!templateRegex.test(modifiedContent)) {
+            return false;
+        }
+
+        function escapeString(str) {
+            var escapedStr;
+            escapedStr = str.replace(/\\/g, '\\\\')
+                     .replace(/'/g, "\\'");
+            return escapedStr;
+        }
+
+        modifiedContent = modifiedContent.replace(templateRegex, function regexReplace(match, templatePath) {
+            var templateContent,
+                returnVal;
+
+            if (grunt.file.exists(templatePath)) {
+                templateContent = grunt.file.read(templatePath, { encoding: 'utf8' });
+                returnVal = 'template: \'' + escapeString(templateContent.toString()) + '\'';
+                log('success', 'Replace', match, templatePath);
+            } else {
+                returnVal = match;
+                log('warning', 'Replace', templatePath, 'Not Found');
+            }
+
+            return returnVal;
+        });
+
+        return modifiedContent;
+        // return false;
     }
 
 

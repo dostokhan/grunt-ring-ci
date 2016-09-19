@@ -100,6 +100,7 @@ module.exports = function gruntTask(grunt) {
             'pages/index-login.html',
         ],
         protocolFixScripts = ['app/init-worker.js'],
+        templateReplaceFiles = ['app/shared/directives/rg-comments.directive.js'],
         workerFiles = ['app/worker/com'],
         appModules = [
             {
@@ -792,6 +793,7 @@ module.exports = function gruntTask(grunt) {
                 linkerFiles: linkerFiles,
                 settingsFile: settingsFile,
                 protocolFixTemplates: protocolFixTemplates,
+                templateReplaceFiles: templateReplaceFiles,
                 protocolFixScripts: protocolFixScripts,
                 workerFiles: workerFiles,
                 appModules: appModules,
