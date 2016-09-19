@@ -27,13 +27,13 @@ module.exports.init = function initFunc(grunt, options) {
                 grunt.log.writeln(Chalk.bold.cyan(task) + ' ' + Chalk.blue(input) + (output ? ' > ' + Chalk.green(output) : ''));
                 break;
             case 'warning':
-                grunt.fail.warn(Chalk.bold.cyan(task) + ' ' + Chalk.bold.red(input) + (output ? ' > ' + Chalk.yellow(output) : ''));
+                grunt.log.writeln(Chalk.bold.cyan(task) + ' ' + Chalk.bold.red(input) + (output ? ' > ' + Chalk.yellow(output) : ''));
                 break;
             case 'error':
                 grunt.fail.fatal(Chalk.bold.cyan(task) + ' ' + Chalk.bold.red(input) + (output ? ' > ' + Chalk.yellow(output) : ''));
                 break;
             case 'info':
-                grunt.log.writeln(Chalk.yellow(task) + ' ' + Chalk.blue(input) + (output ? ' > ' + Chalk.green(output) : ''));
+                grunt.log.writeln(Chalk.underline.magenta(task) + ' ' + Chalk.blue(input) + (output ? ' > ' + Chalk.green(output) : ''));
                 break;
             case 'taskstart':
                 grunt.log.writeln();
@@ -55,11 +55,6 @@ module.exports.init = function initFunc(grunt, options) {
     function templateURLReplace(fileContent) {
         var modifiedContent = fileContent.toString(),
             templateRegex = /templateUrl[\s]*?:[\s]*?'([\w\W]+?)'/g;
-
-            // regex = /(\/{2,}([\s]+)?)?templateUrl\s?:([\s]+)?'([\w\W]+?)'(,)?/g,
-            // full = /(\/{2,}([\s]+)?)?templateUrl\s?:([\s]+)?'([\w\W]+?)'(,)?(([\n]+)?template\s?:([\s]+)?'([\w\W]+?)([^\\]')(,)?([\n]+)?)?/g,
-            // regexw = /template\s?:([\s]+)?'([\w\W]+?)([^\\]')(,)?([\n]+)?/g;
-
 
         if (!templateRegex.test(modifiedContent)) {
             return false;
@@ -136,44 +131,38 @@ module.exports.init = function initFunc(grunt, options) {
         return report.errorCount === 0;
     }
 
-    function replaceFunction(files, search, replace, doNotPrependPath, noOutput) {
+    function replaceFunction(files, search, replace, doNotPrependPath, appendBuildPath) {
         // fix file paths with buildpath
-        var noDebugOutput = !!noOutput,
-            filePaths,
+        var noDebugOutput = Boolean(doNotPrependPath),
             fileContent,
             updatedContent,
             i;
 
         for (i = 0; i < files.length; i++) {
             files[i] = exports.unixifyPath(
-                !!doNotPrependPath ? files[i] : options.appBuildPath + files[i]
+                !!appendBuildPath ? files[i] : options.appBuildPath + files[i]
             );
         }
 
-        filePaths = grunt.file.expand(files);
-
-        if (!(search instanceof Array)) {
-            log('info', 'Replace', search, replace);
-        }
-
-        filePaths.forEach(forEachFunction);
+        // filePaths = grunt.file.expand(files);
+        files.forEach(forEachFunction);
 
         function forEachFunction(filepath) {
             if (!grunt.file.exists(filepath)) {
                 log('error', 'Replace', filepath, 'Not found');
             } else {
                 if (!noDebugOutput) {
-                    log('info', 'Replace in File', filepath);
+                    log('info', 'File', filepath);
                 }
                 fileContent = grunt.file.read(filepath, { encoding: 'utf8' });
                 if (search instanceof Array) {
                     updatedContent = fileContent;
                     for (i = 0; i < search.length; i++) {
-                        if (!noDebugOutput) {
-                            log('info', 'Replace', search[i], replace[i]);
-                        }
                         if (search[i].test(String(updatedContent))) {
                             updatedContent = String(updatedContent).replace(search[i], replace[i]);
+                            if (!noDebugOutput) {
+                                log('success', 'Replace', search[i], replace[i]);
+                            }
                         } else if (!noDebugOutput) {
                             log('warning', 'Replace', search[i], replace[i]);
                         }
@@ -182,7 +171,10 @@ module.exports.init = function initFunc(grunt, options) {
                     updatedContent = fileContent;
                     if (search.test(String(updatedContent))) {
                         updatedContent = String(updatedContent).replace(search, replace);
-                    } else {
+                        if (!noDebugOutput) {
+                            log('success', 'Replace', search, replace);
+                        }
+                    } else if (!noDebugOutput) {
                         log('warning', 'Replace', search, replace);
                     }
                 }
@@ -191,7 +183,7 @@ module.exports.init = function initFunc(grunt, options) {
         }
     }
 
-    function uglify(srcPath, destPath, uglifyOptions) {
+    function uglify(srcPath, destPath, uglifyOptions, returnMinified) {
         var result,
             output,
             src,
@@ -217,8 +209,12 @@ module.exports.init = function initFunc(grunt, options) {
 
         output = Util.format(uglifyOptions.banner, grunt.template.today('yyyy-mm-dd')) + result.code;
 
-        grunt.file.write(dest, output);
         log('success', 'Uglify', src, dest);
+
+        if (returnMinified) {
+            return String(output);
+        }
+        grunt.file.write(dest, output);
         return true;
     }
 
@@ -273,7 +269,7 @@ module.exports.init = function initFunc(grunt, options) {
 
                 // Insert the scripts
                 grunt.file.write(dest, newPage);
-                log('success', 'Linking', dest, counter);
+                log('success', 'Linking', dest, counter + ' files');
             }
         }
     }

@@ -86,7 +86,7 @@ module.exports = function ringci(grunt) {
             }
 
 
-            ringHelper.log('info', 'Linting all Modules: ', forceEslint);
+            ringHelper.log('info', 'Lint all Modules: ', forceEslint);
         // destinations exists? delete and recreate
             if (!grunt.file.exists(buildPath)) {
                 ringHelper.log('info', 'Build Path', 'Creating', buildPath);
@@ -130,9 +130,6 @@ module.exports = function ringci(grunt) {
                 enableLinting = forceEslint ||
                 (options.eslintModules.indexOf(options.appModules[k].name) > -1);
 
-                if (enableLinting) {
-                    ringHelper.log('info', 'Module', options.appModules[k].name);
-                }
                 for (i = 0; i < options.appModules[k].files.length; i++) {
                     srcPath = ringHelper.unixifyPath(options.appSrcPath + options.appModules[k].files[i]);
                     buildPath = ringHelper.unixifyPath(options.appBuildPath + options.appModules[k].files[i]);
@@ -151,6 +148,10 @@ module.exports = function ringci(grunt) {
                         ringHelper.log('error', 'File', srcPath, ' Not Found');
                         return false;
                     }
+                }
+
+                if (enableLinting) {
+                    ringHelper.log('success', 'Lint Module', options.appModules[k].name);
                 }
             }
             ringHelper.log('taskend', 'SOURCE COPIED TO BUILD DIRECTORY');
@@ -186,11 +187,11 @@ module.exports = function ringci(grunt) {
             searches = searches.concat([/analytics\s*:\s*\w+,/, /debugEnabled\s*:\s*\w+,/]);
             replaces = replaces.concat(options.target === 'live' ? ['analytics:true,', 'debugEnabled:false,'] : ['analytics:false,', 'debugEnabled:true,']);
 
-        // Modify settingsFile
+            // Modify settingsFile
             ringHelper.replace(options.settingsFile, searches, replaces);
-        // Modify Template files
-            ringHelper.replace(options.protocolFixTemplates, protocolSearches[0], protocolReplaces[0], true);
-        // MOdify Worker Files
+            // Modify Template files
+            ringHelper.replace(options.protocolFixTemplates, protocolSearches[0], protocolReplaces[0], false, true);
+            // MOdify Worker Files
             ringHelper.replace(options.protocolFixScripts, protocolSearches[1], protocolReplaces[1]);
 
             ringHelper.log('taskend', 'END UPDATE APIVERSION, PROTOCOL, SETTINGS(ANALYTICS,DEBUGENABLED,SECURE');
@@ -276,7 +277,7 @@ module.exports = function ringci(grunt) {
                 debugRegex = /DIGEST_DEBUG_START([\s\S]*?)(DIGEST_DEBUG_END)/gm,
                 ringloggerRegex = /RingLogger([\s\S]*?;)/g;
 
-            ringHelper.log('taskstart', 'Removed DIGEST_DEBUG && RingLogger from: ' + files.length + ' files');
+            ringHelper.log('taskstart', 'Remov DIGEST_DEBUG && RingLogger from: ' + files.length + ' files');
 
             ringHelper.replace(files, [debugRegex, ringloggerRegex], ['', ''], true, true);
 
@@ -298,11 +299,12 @@ module.exports = function ringci(grunt) {
                 srcFile,
                 dest = 'js/worker/';
 
+            ringHelper.log('taskstart', 'Prepare Worker Files');
             for (i = 0; i < options.workerFiles.length; i++) {
                 srcPath = options.appSrcPath + options.workerFiles[i].substr(0, options.workerFiles[i].lastIndexOf('/') + 1);
                 workerFile = options.workerFiles[i].substr(options.workerFiles[i].lastIndexOf('/') + 1);
 
-                ringHelper.log('info', 'Worker File', srcPath, workerFile);
+                ringHelper.log('info', 'Worker File', srcPath, dest + workerFile);
                 if (grunt.file.exists(srcPath + workerFile)) {
                     mainWorker = String(grunt.file.read(srcPath + workerFile, { encoding: 'utf8' }));
                 // process all worker files
@@ -327,7 +329,6 @@ module.exports = function ringci(grunt) {
 
                         if (options.minifyScripts === true || options.target === 'live') {
                         // workerFileContent += grunt.file.read(srcPath + workerFile, {encoding: 'utf8'});
-                            ringHelper.log('success', 'Woker File', dest, workerFile);
                             grunt.file.write(dest + workerFile, workerFileContent + '\n' + mainWorker);
                             if (!ringHelper.uglify(dest + workerFile, dest + workerFile, uglifyOptions)) {
                                 return false;
@@ -344,21 +345,28 @@ module.exports = function ringci(grunt) {
                     return false;
                 }
             }
+
+            ringHelper.log('taskend', 'Done: Prepare Worker Files');
+
             return true;
         }
 
 
         function prepareVendorScripts() {
             var vendorMinFile = 'js/' + Crypto.createHash('md5').update('app-vendor.min.js' + new Date().getTime()).digest('hex') + '.js',
+                uglifiedContent,
                 srcPath = '',
                 minSrcPath = '',
-                scriptContent = '',
                 minifiedScript = '',
-                i,
-                err;
+                i;
+                // err;
 
             ringHelper.log('taskstart', 'BUILDING app.vendor.min');
 
+            // if (!ringHelper.uglify(appMinFile, appMinFile, uglifyOptions)) {
+            //     ringHelper.log('warning', 'Uglify Module', appMinFile);
+            //     return false;
+            // }
 
             for (i = 0; i < options.vendorFiles.length; i++) {
                 srcPath = ringHelper.unixifyPath(options.vendorFiles[i]);
@@ -366,36 +374,45 @@ module.exports = function ringci(grunt) {
                 // is a minified file?
                     if (srcPath.indexOf('min') === -1) {
                         minSrcPath = srcPath.substr(0, srcPath.lastIndexOf('.')) + '.min' + srcPath.substr(srcPath.lastIndexOf('.'));
-                        ringHelper.log('info', 'Dont minify. Got ', minSrcPath);
-                    // exists a minified file already in the same dir of the src file?
+                        // exists a minified file in the same dir of the src file?
                         if (grunt.file.exists(minSrcPath)) {
+                            ringHelper.log('info', 'Got Minified', minSrcPath);
                             minifiedScript += grunt.file.read(minSrcPath, { encoding: 'utf8' });
                         } else {
-                        // no minified file. uglify and build one
-                            try {
-                                minifiedScript += Uglifyjs.minify(srcPath, uglifyOptions).code;
-                                ringHelper.log('success', 'Minify: ', srcPath);
-                            } catch (e) {
-                                err = new Error('Uglification failed.');
-                                if (e.message) {
-                                    err.message += '\n' + e.message + '. \n';
-                                    if (e.line) {
-                                        err.message += 'Line ' + e.line + ' in ' + srcPath + '\n';
-                                    }
-                                }
-                                err.origError = e;
-                                ringHelper.log('error', 'Minify Failed ', srcPath, err.message);
+                            // need to minify
+                            ringHelper.log('info', 'Not Minified: ', srcPath);
+                            uglifiedContent = ringHelper.uglify(srcPath, '', uglifyOptions, true);
+
+                            if (uglifiedContent) {
+                                minifiedScript += uglifiedContent;
+                            } else {
                                 return false;
                             }
+
+                        // no minified file. uglify and build one
+                            // try {
+                            //     minifiedScript += Uglifyjs.minify(srcPath, uglifyOptions).code;
+                            //     ringHelper.log('success', 'Minify: ', srcPath);
+                            // } catch (e) {
+                            //     err = new Error('Uglification failed.');
+                            //     if (e.message) {
+                            //         err.message += '\n' + e.message + '. \n';
+                            //         if (e.line) {
+                            //             err.message += 'Line ' + e.line + ' in ' + srcPath + '\n';
+                            //         }
+                            //     }
+                            //     err.origError = e;
+                            //     ringHelper.log('error', 'Minify Failed ', srcPath, err.message);
+                            //     return false;
+                            // }
                         }
                     } else {
-                        scriptContent = String(grunt.file.read(srcPath, { encoding: 'utf8' }));
-                        grunt.log.writeln(Chalk.cyan('File: ' + srcPath));
-                    // already minified  no need to minify
-                        minifiedScript += scriptContent;
+                        ringHelper.log('info', 'File', srcPath);
+                        // already minified  no need to minify
+                        minifiedScript += String(grunt.file.read(srcPath, { encoding: 'utf8' }));
                     }
                 } else {
-                    ringHelper.log('warning', 'File', srcPath, 'does not exist');
+                    ringHelper.log('error', 'File', srcPath, 'Not found');
                     return false;
                 }
             }
@@ -403,7 +420,7 @@ module.exports = function ringci(grunt) {
             grunt.file.write(ringHelper.unixifyPath(vendorMinFile), minifiedScript);
             VENDOR_SCRIPTS = [vendorMinFile];
 
-            ringHelper.log('success', 'Minify', vendorMinFile);
+            ringHelper.log('success', 'Uglify', vendorMinFile);
 
             ringHelper.log('taskend', 'END BUILDING app.vendor.min');
             return true;
@@ -427,12 +444,10 @@ module.exports = function ringci(grunt) {
 
             grunt.file.write(appMinFile, appScriptsContent);
             if (!ringHelper.uglify(appMinFile, appMinFile, uglifyOptions)) {
-                ringHelper.log('warning', 'Uglify Module', appMinFile);
                 return false;
             }
             SCRIPT_FILES = [appMinFile];
 
-            ringHelper.log('success', 'Uglify Module', appMinFile);
 
             ringHelper.log('taskend', 'END UGLIFY SOURCE MODULES');
             return true;
@@ -468,8 +483,7 @@ module.exports = function ringci(grunt) {
 
 
         function linkScriptsStyles() {
-            var i,
-                styleStartTag = '<!--STYLES-->',
+            var styleStartTag = '<!--STYLES-->',
                 styleEndTag = '<!--STYLES END-->',
                 styleFileTmpl = '<link rel=\'stylesheet\' type=\'text/css\' href=\'%s\' />',
                 scriptStartTag = '<!--SCRIPTS-->',
@@ -477,10 +491,6 @@ module.exports = function ringci(grunt) {
                 scriptFileTmpl = '<script src="%s"></script>';
 
             ringHelper.log('taskstart', 'LINK SOURCE SCRIPTS AND STYLESHEETS');
-
-            for (i = 0; i < options.linkerFiles.length; i++) {
-                ringHelper.log('success', 'link', options.linkerFiles[i]);
-            }
 
             if (options.target === 'live') {
                 ringHelper.linkFiles(VENDOR_SCRIPTS.concat(SCRIPT_FILES), scriptFileTmpl, scriptStartTag, scriptEndTag, options.linkerFiles);
