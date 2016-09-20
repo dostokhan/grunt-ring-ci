@@ -106,7 +106,7 @@ module.exports.init = function initFunc(grunt, options) {
         try {
             report = engine.executeOnFiles([fileSrc]);
         } catch (err) {
-            grunt.warn(err);
+            log('warning', 'Lint', err);
             return false;
         }
 
@@ -116,7 +116,7 @@ module.exports.init = function initFunc(grunt, options) {
 
 
         results = report.results;
-        Chalk.yellow(formatter(results));
+        grunt.log.write(Chalk.yellow(formatter(results)));
 
         if (opts.quiet) {
             results = Eslint.CLIEngine.getErrorResults(results);
