@@ -60,12 +60,13 @@ module.exports.init = function initFunc(grunt, options) {
             return false;
         }
 
-        function escapeString(str) {
+        function escapeStringAndNewline(str) {
             var escapedStr;
             /* eslint-disable quotes */
             escapedStr = str.replace(/\\/g, '\\\\')
                      .replace(/'/g, "\\'");
             /* eslint-enable quotes */
+            escapedStr = escapedStr.replace(/(?:\r\n|\r|\n)/g, '\' + \n \'');
             return escapedStr;
         }
 
@@ -75,7 +76,7 @@ module.exports.init = function initFunc(grunt, options) {
 
             if (grunt.file.exists(templatePath)) {
                 templateContent = grunt.file.read(templatePath, { encoding: 'utf8' });
-                returnVal = 'template: \'' + escapeString(templateContent.toString()) + '\'';
+                returnVal = 'template: \'' + escapeStringAndNewline(templateContent.toString()) + '\'';
                 log('success', 'Replace', match, templatePath);
             } else {
                 returnVal = match;
