@@ -67,7 +67,7 @@ module.exports = function ringci(grunt) {
                 },
                 srcPath = ringHelper.unixifyPath(options.appSrcPath),
                 enableLinting = true, // = (!options.eslintModules || options.eslintModules.length === 0),
-                forceEslint = false,
+                forceEslint = true,
                 buildPath = ringHelper.unixifyPath(options.appBuildPath);
 
 
@@ -78,16 +78,15 @@ module.exports = function ringci(grunt) {
                 eslintModules = grunt.file.read('.eslintmodules', { encoding: 'utf8' });
                 eslintModules = eslintModules.trim();
                     // .split('\n');
-                if (eslintModules.length === 0) {
-                    forceEslint = true;
-                } else {
+                if (eslintModules.length !== 0) {
                     eslintModules = eslintModules.split('\n');
-                    grunt.log.writeln();
-                    grunt.log.write(eslintModules);
-                    grunt.log.writeln();
+                    for (i = 0; i < options.appModules.length; i++) {
+                        if (eslintModules[0] === options.appModules[i].name) {
+                            forceEslint = false;
+                            break;
+                        }
+                    }
                 }
-            } else {
-                forceEslint = true;
             }
 
 
