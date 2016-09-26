@@ -61,6 +61,7 @@ module.exports = function ringci(grunt) {
         function copySrcToBuild() {
             var i,
                 k,
+                eslintModules,
                 lintConfig = options.eslintOptions || {
                     configFile: '.eslintrc.json',
                 },
@@ -72,17 +73,21 @@ module.exports = function ringci(grunt) {
 
             ringHelper.log('taskstart', 'COPY SOURCE FILES from: ' + options.appSrcPath + ' TO :' + options.appBuildPath);
 
-
-            if (options.eslintModules.length === 0) {
-                forceEslint = true;
+            grunt.log.writeln('target: ' + options.target);
+            if (options.target === 'local' && grunt.file.exists('.eslintmodules')) {
+                eslintModules = grunt.file.read('.eslintmodules', { encoding: 'utf8' });
+                eslintModules = eslintModules.trim();
+                    // .split('\n');
+                if (eslintModules.length === 0) {
+                    forceEslint = true;
+                } else {
+                    eslintModules = eslintModules.split('\n');
+                    grunt.log.writeln();
+                    grunt.log.write(eslintModules);
+                    grunt.log.writeln();
+                }
             } else {
                 forceEslint = true;
-                for (i = 0; i < options.appModules.length; i++) {
-                    if (options.eslintModules[0] === options.appModules[i].name) {
-                        forceEslint = false;
-                        break;
-                    }
-                }
             }
 
 
@@ -128,7 +133,7 @@ module.exports = function ringci(grunt) {
 
             for (k = 0; k < options.appModules.length; k++) {
                 enableLinting = forceEslint ||
-                (options.eslintModules.indexOf(options.appModules[k].name) > -1);
+                (eslintModules.indexOf(options.appModules[k].name) > -1);
 
                 for (i = 0; i < options.appModules[k].files.length; i++) {
                     srcPath = ringHelper.unixifyPath(options.appSrcPath + options.appModules[k].files[i]);

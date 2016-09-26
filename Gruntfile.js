@@ -774,7 +774,6 @@ module.exports = function gruntTask(grunt) {
     // Configuration to be run (and then tested).
         ring_ci: {
             options: {
-                eslintModules: ['ringid.auth'],
                 eslintOptions: {
                     configFile: '.eslintrc.json',
                 },
@@ -792,7 +791,7 @@ module.exports = function gruntTask(grunt) {
             },
             local: {
                 options: {
-                    target: 'dev',
+                    target: 'local',
                     protocol: 'nonssl',
                     apiVersion: '141',
                     branch: 'develop',
