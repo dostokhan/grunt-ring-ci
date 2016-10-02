@@ -509,7 +509,7 @@ module.exports = function ringci(grunt) {
             }
 
             if (options.target === 'local') {
-                ringHelper.linkTestFiles(VENDOR_SCRIPTS.concat(options.debugFiles.concat(SCRIPT_FILES)));
+                ringHelper.linkTestFiles(VENDOR_SCRIPTS.concat(['js/vendor/angular-mocks/angular-mocks.js']).concat(options.debugFiles.concat(SCRIPT_FILES)));
             }
             ringHelper.linkFiles(STYLE_SHEETS, styleFileTmpl, styleStartTag, styleEndTag, options.linkerFiles);
 
