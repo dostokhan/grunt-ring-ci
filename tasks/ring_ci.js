@@ -9,6 +9,7 @@
 'use strict';
 
 var Chalk = require('chalk'),
+    Path = require('path'),
     cssmin = require('cssmin'),
     Uglifyjs = require('uglify-js'),
     Crypto = require('crypto');
@@ -305,28 +306,32 @@ module.exports = function ringci(grunt) {
 
             ringHelper.log('taskstart', 'Prepare Worker Files');
             for (i = 0; i < options.workerFiles.length; i++) {
+                // srcPath = Path.resolve(options.appSrcPath + options.workerFiles[i].substr(0, options.workerFiles[i].lastIndexOf('/') + 1));
                 srcPath = options.appSrcPath + options.workerFiles[i].substr(0, options.workerFiles[i].lastIndexOf('/') + 1);
                 workerFile = options.workerFiles[i].substr(options.workerFiles[i].lastIndexOf('/') + 1);
 
-                ringHelper.log('info', 'Worker File', srcPath, dest + workerFile);
+                ringHelper.log('info', 'Worker File', srcPath + workerFile, dest + workerFile);
                 if (grunt.file.exists(srcPath + workerFile)) {
                     mainWorker = String(grunt.file.read(srcPath + workerFile, { encoding: 'utf8' }));
                 // process all worker files
                     regexMatches = mainWorker.match(importScriptsRegex);
                     if (regexMatches && regexMatches.length > 0) {
                         for (j = 0; j < regexMatches.length; j++) {
+                            // srcFile = Path.resolve(regexMatches[j].substr(15, regexMatches[j].length - 15 - 3));
                             srcFile = regexMatches[j].substr(15, regexMatches[j].length - 15 - 3);
-                            ringHelper.log('success', 'Included File', srcFile);
-                            if (grunt.file.exists(srcPath + srcFile)) {
+
+                            if (grunt.file.exists(Path.resolve(srcPath + srcFile))) {
                                 if (options.minifyScripts === true || options.target === 'live') {
-                                // insert all supportFiles inside worker file content;
-                                    workerFileContent += String(grunt.file.read(srcPath + srcFile, { encoding: 'utf8' })) + '\n';
+                                    ringHelper.log('success', 'Included File', Path.resolve((srcPath + srcFile)));
+                                    // insert all supportFiles inside worker file content;
+                                    workerFileContent += String(grunt.file.read(Path.resolve(srcPath + srcFile), { encoding: 'utf8' })) + '\n';
                                     mainWorker = mainWorker.replace(regexMatches[j], '');
                                 } else {
-                                    grunt.file.copy((srcPath + srcFile), (dest + srcFile));
+                                    ringHelper.log('info', 'Copy', Path.resolve((srcPath + srcFile)), Path.resolve(dest + srcFile));
+                                    grunt.file.copy(Path.resolve(srcPath + srcFile), Path.resolve(dest + srcFile));
                                 }
                             } else {
-                                ringHelper.log('error', 'File', srcPath, ' Not Found');
+                                ringHelper.log('error', 'File', Path.resolve(srcPath + srcFile), ' Not Found');
                                 return false;
                             }
                         }
@@ -345,7 +350,7 @@ module.exports = function ringci(grunt) {
                         return false;
                     }
                 } else {
-                    ringHelper.log('error', 'File', srcPath, ' Not Found');
+                    ringHelper.log('error', 'File', srcPath + workerFile, ' Not Found');
                     return false;
                 }
             }
@@ -501,6 +506,10 @@ module.exports = function ringci(grunt) {
             } else {
                 ringHelper.linkFiles(VENDOR_SCRIPTS.concat(options.debugFiles.concat(SCRIPT_FILES)),
                     scriptFileTmpl, scriptStartTag, scriptEndTag, options.linkerFiles);
+            }
+
+            if (options.target === 'local') {
+                ringHelper.linkTestFiles(VENDOR_SCRIPTS.concat(options.debugFiles.concat(SCRIPT_FILES)));
             }
             ringHelper.linkFiles(STYLE_SHEETS, styleFileTmpl, styleStartTag, styleEndTag, options.linkerFiles);
 

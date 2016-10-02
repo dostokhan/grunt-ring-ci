@@ -18,6 +18,8 @@ module.exports.init = function initFunc(grunt, options) {
     exports.replace = replaceFunction;
     exports.uglify = uglify;
     exports.linkFiles = linkFiles;
+    exports.linkTestFiles = linkTestFiles;
+
     exports.templateURLReplace = templateURLReplace;
     exports.log = log;
 
@@ -219,6 +221,68 @@ module.exports.init = function initFunc(grunt, options) {
         return true;
     }
 
+
+    function linkTestFiles(srcFiles) {
+        var dest = 'karma.conf.js',
+            startTag = '// APP_SCRIPTS',
+            endTag = '// END_APP_SCRIPTS',
+            template = '\'%s\',',
+            padding,
+            scripts,
+            start,
+            end,
+            newPage,
+            ind,
+            page;
+
+        log('info', 'LINKIKNG TEST FILES', ' IN karma.conf.js');
+
+        if (!grunt.file.exists(dest)) {
+            log('warning', dest, 'Not Found');
+            return;
+        }
+
+        page = grunt.file.read(dest);
+        start = page.indexOf(startTag);
+        end = page.indexOf(endTag);
+
+
+
+        function filterFunc(filepath) {
+            // Warn on and remove invalid source files (if nonull was set).
+            if (!grunt.file.exists(filepath)) {
+                log('error', 'Src File: ', filepath, 'Not found');
+                return false;
+            }
+            return true;
+        }
+
+        function mapFunc(filepath) {
+            return Util.format(template, filepath);
+        }
+
+        if (start !== -1 && end !== -1 && start < end) {
+            padding = '';
+            ind = start - 1;
+            while (/[^\S\n]/.test(page.charAt(ind))) {
+                padding += page.charAt(ind);
+                ind -= 1;
+            }
+
+            scripts = srcFiles.filter(filterFunc).map(mapFunc);
+
+            newPage = page.substr(0, start + startTag.length) +
+                     grunt.util.linefeed +
+                     padding +
+                     scripts.join(grunt.util.linefeed + padding) +
+                     grunt.util.linefeed +
+                     padding +
+                     page.substr(end);
+
+            // Insert the scripts
+            grunt.file.write(dest, newPage);
+        }
+    }
 
     function linkFiles(srcFiles, template, startTag, endTag, destFiles) {
         var page,
