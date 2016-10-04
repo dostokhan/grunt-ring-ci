@@ -321,7 +321,7 @@ module.exports = function ringci(grunt) {
                             srcFile = regexMatches[j].substr(15, regexMatches[j].length - 15 - 3);
 
                             if (grunt.file.exists(Path.resolve(srcPath + srcFile))) {
-                                if (options.minifyScripts === true || options.target === 'live') {
+                                if (options.minifyScripts === true) {
                                     ringHelper.log('success', 'Included File', Path.resolve((srcPath + srcFile)));
                                     // insert all supportFiles inside worker file content;
                                     workerFileContent += String(grunt.file.read(Path.resolve(srcPath + srcFile), { encoding: 'utf8' })) + '\n';
@@ -336,7 +336,7 @@ module.exports = function ringci(grunt) {
                             }
                         }
 
-                        if (options.minifyScripts === true || options.target === 'live') {
+                        if (options.minifyScripts === true) {
                         // workerFileContent += grunt.file.read(srcPath + workerFile, {encoding: 'utf8'});
                             grunt.file.write(dest + workerFile, workerFileContent + '\n' + mainWorker);
                             if (!ringHelper.uglify(dest + workerFile, dest + workerFile, uglifyOptions)) {
@@ -549,7 +549,7 @@ module.exports = function ringci(grunt) {
         }
 
      // 6. uglify modules if necessary
-        if (taskSuccess && (options.minifyScripts || options.target === 'live')) {
+        if (taskSuccess && options.minifyScripts) {
             taskSuccess = prepareVendorScripts();
             if (taskSuccess) {
                 taskSuccess = uglifyModules();
@@ -557,7 +557,7 @@ module.exports = function ringci(grunt) {
         }
     // 7. minify css if necessary
         if (taskSuccess) {
-            if (options.minifyStyles || options.target === 'live') {
+            if (options.minifyStyles) {
                 taskSuccess = minifyStyles();
             } else {
                 STYLE_SHEETS = options.appStyles;
